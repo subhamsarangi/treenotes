@@ -185,6 +185,11 @@ r.get('/answer/:id/edit-meta', (req, res) => {
           <input name="summary" value="${a.summary || ''}">
         </div>
         <div class="form-group">
+          <label>Image URL</label>
+          <input name="image" type="url" placeholder="https://..." value="${a.image || ''}">
+          ${a.image ? `<div class="mt-2"><img src="${a.image}" style="max-width:200px;border-radius:6px"></div>` : ''}
+        </div>
+        <div class="form-group">
           <label>Created At</label>
           <input name="created_at" type="date" value="${a.created_at}">
         </div>
@@ -198,9 +203,9 @@ r.get('/answer/:id/edit-meta', (req, res) => {
 });
 
 r.post('/answer/:id/edit-meta', (req, res) => {
-  const { title, niche_id, summary, created_at } = req.body;
-  run('UPDATE answers SET title=?, niche_id=?, summary=?, created_at=? WHERE id=?',
-    [title, niche_id || null, summary || '', created_at, req.params.id]);
+  const { title, niche_id, summary, created_at, image } = req.body;
+  run('UPDATE answers SET title=?, niche_id=?, summary=?, created_at=?, image=? WHERE id=?',
+    [title, niche_id || null, summary || '', created_at, image || null, req.params.id]);
   res.redirect('/answer/' + req.params.id);
 });
 

@@ -19,7 +19,8 @@ export async function getDb() {
       name TEXT NOT NULL,
       description TEXT,
       color TEXT DEFAULT '#6366f1',
-      icon TEXT DEFAULT '✦'
+      icon TEXT DEFAULT '✦',
+      image TEXT
     );
     CREATE TABLE IF NOT EXISTS answers (
       id TEXT PRIMARY KEY,
@@ -28,7 +29,8 @@ export async function getDb() {
       summary TEXT,
       content TEXT NOT NULL,
       created_at TEXT NOT NULL,
-      starred INTEGER DEFAULT 0
+      starred INTEGER DEFAULT 0,
+      image TEXT
     );
     CREATE TABLE IF NOT EXISTS answer_links (
       id INTEGER PRIMARY KEY AUTOINCREMENT,

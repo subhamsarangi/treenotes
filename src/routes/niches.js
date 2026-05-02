@@ -42,10 +42,10 @@ r.get('/niches/new', (req, res) => {
 });
 
 r.post('/niches/new', (req, res) => {
-  const { name, description, color, icon } = req.body;
+  const { name, description, color, icon, image } = req.body;
   const id = generateId(name);
-  run('INSERT INTO niches (id, name, description, color, icon) VALUES (?,?,?,?,?)',
-    [id, name, description || '', color || COLORS[0], icon || '✦']);
+  run('INSERT INTO niches (id, name, description, color, icon, image) VALUES (?,?,?,?,?,?)',
+    [id, name, description || '', color || COLORS[0], icon || '✦', image || null]);
   res.redirect('/niches');
 });
 
@@ -56,9 +56,9 @@ r.get('/niches/:id/edit', (req, res) => {
 });
 
 r.post('/niches/:id/edit', (req, res) => {
-  const { name, description, color, icon } = req.body;
-  run('UPDATE niches SET name=?, description=?, color=?, icon=? WHERE id=?',
-    [name, description || '', color, icon, req.params.id]);
+  const { name, description, color, icon, image } = req.body;
+  run('UPDATE niches SET name=?, description=?, color=?, icon=?, image=? WHERE id=?',
+    [name, description || '', color, icon, image || null, req.params.id]);
   res.redirect('/niches');
 });
 
@@ -75,6 +75,11 @@ function nicheForm(niche) {
         <div class="form-group">
           <label>Description</label>
           <input name="description" value="${niche?.description || ''}">
+        </div>
+        <div class="form-group">
+          <label>Image URL</label>
+          <input name="image" type="url" placeholder="https://..." value="${niche?.image || ''}">
+          ${niche?.image ? `<div class="mt-2"><img src="${niche.image}" style="max-width:200px;border-radius:6px"></div>` : ''}
         </div>
         <div class="form-group">
           <label>Color</label>
