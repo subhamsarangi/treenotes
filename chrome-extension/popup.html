@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      width: 280px;
+      font-family: 'Segoe UI', sans-serif;
+      background: #0c0c0f;
+      color: #e8e6f0;
+      padding: 1.2rem;
+    }
+    .logo {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #c8b4fa;
+      margin-bottom: 1rem;
+      letter-spacing: -0.01em;
+    }
+    button {
+      width: 100%;
+      padding: 0.7rem 1rem;
+      border-radius: 8px;
+      border: 1px solid #252535;
+      background: #13131a;
+      color: #e8e6f0;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    button:hover { background: #1a1a24; border-color: #c8b4fa; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    #status {
+      margin-top: 0.8rem;
+      font-size: 0.78rem;
+      color: #6b6880;
+      min-height: 1.2rem;
+    }
+    #status.ok { color: #7ee8b4; }
+    #status.err { color: #f87171; }
+  </style>
+</head>
+<body>
+  <div class="logo">✦ Lumina</div>
+  <button id="inject-btn">
+    <span>⟳</span> Convert Last Answer
+  </button>
+  <div id="status">Open ChatGPT, Gemini, or Claude first.</div>
+  <script src="popup.js"></script>
+</body>
+</html>
