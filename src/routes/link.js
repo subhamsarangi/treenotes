@@ -5,15 +5,15 @@ import { layout } from '../lib/layout.js';
 const r = Router();
 
 r.get('/answer/:id/link', async (req, res) => {
-  const rows = await query('SELECT * FROM answers WHERE id = ?', [req.params.id]);
+  const rows = await query('SELECT * FROM answers WHERE id = ? AND owner_id = ?', [req.params.id, req.user.id]);
   const a = rows[0];
   if (!a) return res.redirect('/');
 
   const { search = '', sort = 'created_at', order = 'desc', niche = '' } = req.query;
-  const niches = await query('SELECT * FROM niches');
+  const niches = await query('SELECT * FROM niches WHERE owner_id = ?', [req.user.id]);
 
-  let sql = 'SELECT ans.*, n.name as niche_name FROM answers ans LEFT JOIN niches n ON ans.niche_id = n.id WHERE ans.id != ?';
-  const params = [a.id];
+  let sql = 'SELECT ans.*, n.name as niche_name FROM answers ans LEFT JOIN niches n ON ans.niche_id = n.id WHERE ans.id != ? AND ans.owner_id = ?';
+  const params = [a.id, req.user.id];
 
   if (search) { sql += ' AND (ans.title LIKE ? OR ans.summary LIKE ?)'; params.push(`%${search}%`, `%${search}%`); }
   if (niche) { sql += ' AND ans.niche_id = ?'; params.push(niche); }
@@ -95,17 +95,21 @@ r.post('/answer/:id/link', async (req, res) => {
 
   if (!to_id || !relation_type) return res.redirect(`/answer/${from_id}/link`);
 
+  // Verify both answers belong to this user
+  const owned = await query('SELECT id FROM answers WHERE id IN (?, ?) AND owner_id = ?', [from_id, to_id, req.user.id]);
+  if (owned.length < 2) return res.redirect(`/answer/${from_id}/link`);
+
   const already = await query('SELECT id FROM answer_links WHERE (from_id=? AND to_id=?) OR (from_id=? AND to_id=?)',
     [from_id, to_id, to_id, from_id]);
   if (!already.length) {
-    await run('INSERT INTO answer_links (from_id, to_id, relation_type) VALUES (?,?,?)', [from_id, to_id, relation_type]);
+    await run('INSERT INTO answer_links (from_id, to_id, relation_type, owner_id) VALUES (?,?,?,?)', [from_id, to_id, relation_type, req.user.id]);
   }
 
   res.redirect(`/answer/${from_id}`);
 });
 
 r.post('/answer/:id/unlink/:linkId', async (req, res) => {
-  await run('DELETE FROM answer_links WHERE id = ?', [req.params.linkId]);
+  await run('DELETE FROM answer_links WHERE id = ? AND owner_id = ?', [req.params.linkId, req.user.id]);
   res.redirect('/answer/' + req.params.id);
 });
 

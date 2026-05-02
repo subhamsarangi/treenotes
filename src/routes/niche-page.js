@@ -5,14 +5,14 @@ import { layout } from '../lib/layout.js';
 const r = Router();
 
 r.get('/niche/:id', async (req, res) => {
-  const niches = await query('SELECT * FROM niches WHERE id = ?', [req.params.id]);
+  const niches = await query('SELECT * FROM niches WHERE id = ? AND owner_id = ?', [req.params.id, req.user.id]);
   const niche = niches[0];
   if (!niche) return res.redirect('/');
 
   const { search = '', sort = 'created_at', order = 'desc', starred } = req.query;
 
-  let sql = 'SELECT * FROM answers WHERE niche_id = ?';
-  const params = [req.params.id];
+  let sql = 'SELECT * FROM answers WHERE niche_id = ? AND owner_id = ?';
+  const params = [req.params.id, req.user.id];
 
   if (search) { sql += ' AND (title LIKE ? OR summary LIKE ?)'; params.push(`%${search}%`, `%${search}%`); }
   if (starred === '1') { sql += ' AND starred = 1'; }

@@ -6,7 +6,7 @@ import { renderBlocks } from '../lib/utils.js';
 const r = Router();
 
 r.get('/answer/:id', async (req, res) => {
-  const rows = await query('SELECT a.*, n.name as niche_name, n.color as niche_color, n.id as niche_id FROM answers a LEFT JOIN niches n ON a.niche_id = n.id WHERE a.id = ?', [req.params.id]);
+  const rows = await query('SELECT a.*, n.name as niche_name, n.color as niche_color, n.id as niche_id FROM answers a LEFT JOIN niches n ON a.niche_id = n.id WHERE a.id = ? AND a.owner_id = ?', [req.params.id, req.user.id]);
   const a = rows[0];
   if (!a) return res.redirect('/');
 
@@ -99,10 +99,10 @@ r.get('/answer/:id', async (req, res) => {
 });
 
 r.get('/answer/:id/pick-niche', async (req, res) => {
-  const rows = await query('SELECT * FROM answers WHERE id = ?', [req.params.id]);
+  const rows = await query('SELECT * FROM answers WHERE id = ? AND owner_id = ?', [req.params.id, req.user.id]);
   const a = rows[0];
   if (!a) return res.redirect('/');
-  const niches = await query('SELECT * FROM niches');
+  const niches = await query('SELECT * FROM niches WHERE owner_id = ?', [req.user.id]);
   const unmatched = req.query.unmatched || '';
 
   res.send(layout('Pick a Niche', `
@@ -129,20 +129,24 @@ r.get('/answer/:id/pick-niche', async (req, res) => {
 });
 
 r.post('/answer/:id/pick-niche', async (req, res) => {
-  await run('UPDATE answers SET niche_id = ? WHERE id = ?', [req.body.niche_id, req.params.id]);
+  await run('UPDATE answers SET niche_id = ? WHERE id = ? AND owner_id = ?', [req.body.niche_id, req.params.id, req.user.id]);
   res.redirect('/answer/' + req.params.id);
 });
 
 r.post('/answer/:id/star', async (req, res) => {
-  const rows = await query('SELECT starred FROM answers WHERE id = ?', [req.params.id]);
+  const rows = await query('SELECT starred FROM answers WHERE id = ? AND owner_id = ?', [req.params.id, req.user.id]);
   const a = rows[0];
   if (!a) return res.redirect('/');
-  await run('UPDATE answers SET starred = ? WHERE id = ?', [a.starred ? 0 : 1, req.params.id]);
+  await run('UPDATE answers SET starred = ? WHERE id = ? AND owner_id = ?', [a.starred ? 0 : 1, req.params.id, req.user.id]);
   res.redirect('/answer/' + req.params.id);
 });
 
 r.post('/answer/:id/delete', async (req, res) => {
   const id = req.params.id;
+  // Verify ownership first
+  const owned = await query('SELECT id FROM answers WHERE id = ? AND owner_id = ?', [id, req.user.id]);
+  if (!owned.length) return res.redirect('/');
+
   const children = await query('SELECT from_id FROM answer_links WHERE to_id = ? AND relation_type = ?', [id, 'parent']);
   if (children.length) {
     return res.send(layout('Cannot Delete', `
@@ -159,15 +163,15 @@ r.post('/answer/:id/delete', async (req, res) => {
 });
 
 r.post('/answer/:id/unlink/:linkId', async (req, res) => {
-  await run('DELETE FROM answer_links WHERE id = ?', [req.params.linkId]);
+  await run('DELETE FROM answer_links WHERE id = ? AND owner_id = ?', [req.params.linkId, req.user.id]);
   res.redirect('/answer/' + req.params.id);
 });
 
 r.get('/answer/:id/edit-meta', async (req, res) => {
-  const rows = await query('SELECT * FROM answers WHERE id = ?', [req.params.id]);
+  const rows = await query('SELECT * FROM answers WHERE id = ? AND owner_id = ?', [req.params.id, req.user.id]);
   const a = rows[0];
   if (!a) return res.redirect('/');
-  const niches = await query('SELECT * FROM niches');
+  const niches = await query('SELECT * FROM niches WHERE owner_id = ?', [req.user.id]);
   res.send(layout('Edit Metadata', `
     <div class="container" style="max-width:560px">
       <a href="/answer/${a.id}" class="muted small mt-4" style="display:block">← Back</a>
@@ -208,13 +212,13 @@ r.get('/answer/:id/edit-meta', async (req, res) => {
 
 r.post('/answer/:id/edit-meta', async (req, res) => {
   const { title, niche_id, summary, created_at, image } = req.body;
-  await run('UPDATE answers SET title=?, niche_id=?, summary=?, created_at=?, image=? WHERE id=?',
-    [title, niche_id || null, summary || '', created_at, image || null, req.params.id]);
+  await run('UPDATE answers SET title=?, niche_id=?, summary=?, created_at=?, image=? WHERE id=? AND owner_id=?',
+    [title, niche_id || null, summary || '', created_at, image || null, req.params.id, req.user.id]);
   res.redirect('/answer/' + req.params.id);
 });
 
 r.get('/answer/:id/edit-content', async (req, res) => {
-  const rows = await query('SELECT * FROM answers WHERE id = ?', [req.params.id]);
+  const rows = await query('SELECT * FROM answers WHERE id = ? AND owner_id = ?', [req.params.id, req.user.id]);
   const a = rows[0];
   if (!a) return res.redirect('/');
   const prettifiedContent = JSON.stringify(JSON.parse(a.content), null, 2);
@@ -257,7 +261,7 @@ r.get('/answer/:id/edit-content', async (req, res) => {
 r.post('/answer/:id/edit-content', async (req, res) => {
   try {
     JSON.parse(req.body.content);
-    await run('UPDATE answers SET content=? WHERE id=?', [req.body.content, req.params.id]);
+    await run('UPDATE answers SET content=? WHERE id=? AND owner_id=?', [req.body.content, req.params.id, req.user.id]);
   } catch {}
   res.redirect('/answer/' + req.params.id);
 });

@@ -5,12 +5,13 @@ import { layout } from '../lib/layout.js';
 const r = Router();
 
 r.get('/', async (req, res) => {
-  const niches = await query('SELECT * FROM niches');
-  const starred = await query('SELECT a.*, n.name as niche_name, n.color as niche_color FROM answers a LEFT JOIN niches n ON a.niche_id = n.id WHERE a.starred = 1 ORDER BY a.created_at DESC LIMIT 6');
-  const counts = await query('SELECT niche_id, COUNT(*) as cnt FROM answers GROUP BY niche_id');
+  const uid = req.user.id;
+  const niches = await query('SELECT * FROM niches WHERE owner_id = ?', [uid]);
+  const starred = await query('SELECT a.*, n.name as niche_name, n.color as niche_color FROM answers a LEFT JOIN niches n ON a.niche_id = n.id WHERE a.starred = 1 AND a.owner_id = ? ORDER BY a.created_at DESC LIMIT 6', [uid]);
+  const counts = await query('SELECT niche_id, COUNT(*) as cnt FROM answers WHERE owner_id = ? GROUP BY niche_id', [uid]);
   const countMap = Object.fromEntries(counts.map(c => [c.niche_id, c.cnt]));
-  const unnichedAnswers = await query('SELECT * FROM answers WHERE niche_id IS NULL ORDER BY created_at DESC');
-  const recentAnswers = await query('SELECT a.*, n.name as niche_name, n.color as niche_color FROM answers a LEFT JOIN niches n ON a.niche_id = n.id ORDER BY a.created_at DESC LIMIT 5');
+  const unnichedAnswers = await query('SELECT * FROM answers WHERE niche_id IS NULL AND owner_id = ? ORDER BY created_at DESC', [uid]);
+  const recentAnswers = await query('SELECT a.*, n.name as niche_name, n.color as niche_color FROM answers a LEFT JOIN niches n ON a.niche_id = n.id WHERE a.owner_id = ? ORDER BY a.created_at DESC LIMIT 5', [uid]);
 
   res.send(layout('Home', `
     <div class="container-wide">

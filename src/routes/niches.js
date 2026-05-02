@@ -9,7 +9,7 @@ const COLORS = ['#c8b4fa','#7ee8b4','#f4a96a','#f87171','#60c4f8','#f9d96a','#e8
 const ICONS = ['✦','◈','◉','⬡','◆','▲','●','★','⬢','◎'];
 
 r.get('/niches', async (req, res) => {
-  const niches = await query('SELECT n.*, COUNT(a.id) as cnt FROM niches n LEFT JOIN answers a ON a.niche_id = n.id GROUP BY n.id');
+  const niches = await query('SELECT n.*, COUNT(a.id) as cnt FROM niches n LEFT JOIN answers a ON a.niche_id = n.id WHERE n.owner_id = ? GROUP BY n.id', [req.user.id]);
   res.send(layout('Niches', `
     <div class="container">
       <div class="flex-between mt-4 mb-2">
@@ -44,13 +44,13 @@ r.get('/niches/new', (req, res) => {
 r.post('/niches/new', async (req, res) => {
   const { name, description, color, icon, image } = req.body;
   const id = generateId(name);
-  await run('INSERT INTO niches (id, name, description, color, icon, image) VALUES (?,?,?,?,?,?)',
-    [id, name, description || '', color || COLORS[0], icon || '✦', image || null]);
+  await run('INSERT INTO niches (id, name, description, color, icon, image, owner_id) VALUES (?,?,?,?,?,?,?)',
+    [id, name, description || '', color || COLORS[0], icon || '✦', image || null, req.user.id]);
   res.redirect('/niches');
 });
 
 r.get('/niches/:id/edit', async (req, res) => {
-  const niches = await query('SELECT * FROM niches WHERE id = ?', [req.params.id]);
+  const niches = await query('SELECT * FROM niches WHERE id = ? AND owner_id = ?', [req.params.id, req.user.id]);
   const niche = niches[0];
   if (!niche) return res.redirect('/niches');
   res.send(nicheForm(niche));
@@ -58,8 +58,8 @@ r.get('/niches/:id/edit', async (req, res) => {
 
 r.post('/niches/:id/edit', async (req, res) => {
   const { name, description, color, icon, image } = req.body;
-  await run('UPDATE niches SET name=?, description=?, color=?, icon=?, image=? WHERE id=?',
-    [name, description || '', color, icon, image || null, req.params.id]);
+  await run('UPDATE niches SET name=?, description=?, color=?, icon=?, image=? WHERE id=? AND owner_id=?',
+    [name, description || '', color, icon, image || null, req.params.id, req.user.id]);
   res.redirect('/niches');
 });
 
