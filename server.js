@@ -2,6 +2,7 @@ import express from "express";
 import session from "express-session";
 import { getDb } from "./src/db/index.js";
 import { requireAuth } from "./src/lib/auth.js";
+import { TursoSessionStore } from "./src/lib/turso-session-store.js";
 import authRouter from "./src/routes/auth.js";
 import homeRouter from "./src/routes/home.js";
 import nichesRouter from "./src/routes/niches.js";
@@ -16,18 +17,20 @@ const app = express();
 app.use(express.urlencoded({ extended: true, limit: "2mb" }));
 app.use(express.json());
 
+const db = await getDb();
+
 app.use(session({
+  store: new TursoSessionStore(db),
   secret: process.env.SESSION_SECRET || 'lumina-dev-secret-change-in-prod',
   resave: false,
   saveUninitialized: false,
   cookie: {
     secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
+    sameSite: 'lax',
     maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
   }
 }));
-
-await getDb();
 
 // Public routes
 app.use(authRouter);

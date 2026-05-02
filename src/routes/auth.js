@@ -133,7 +133,10 @@ r.post('/register', async (req, res) => {
 
   req.session.userId = id;
   req.session.email = email.toLowerCase();
-  res.redirect('/');
+  req.session.save((err) => {
+    if (err) console.error('Session save error:', err);
+    res.redirect('/');
+  });
 });
 
 r.post('/login', async (req, res) => {
@@ -157,7 +160,10 @@ r.post('/login', async (req, res) => {
 
   req.session.userId = user.id;
   req.session.email = user.email;
-  res.redirect('/');
+  req.session.save((err) => {
+    if (err) console.error('Session save error:', err);
+    res.redirect('/');
+  });
 });
 
 r.post('/logout', (req, res) => {
