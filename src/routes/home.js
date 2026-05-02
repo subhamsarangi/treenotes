@@ -9,6 +9,7 @@ r.get('/', (req, res) => {
   const starred = query('SELECT a.*, n.name as niche_name, n.color as niche_color FROM answers a LEFT JOIN niches n ON a.niche_id = n.id WHERE a.starred = 1 ORDER BY a.created_at DESC LIMIT 6');
   const counts = query('SELECT niche_id, COUNT(*) as cnt FROM answers GROUP BY niche_id');
   const countMap = Object.fromEntries(counts.map(c => [c.niche_id, c.cnt]));
+  const unnichedAnswers = query('SELECT * FROM answers WHERE niche_id IS NULL ORDER BY created_at DESC');
 
   res.send(layout('Home', `
     <div class="container-wide">
@@ -25,6 +26,25 @@ r.get('/', (req, res) => {
                   </div>
                   <div style="font-family:'Fraunces',serif;font-size:1.05rem;margin-bottom:0.3rem">${a.title}</div>
                   <div class="muted small">${a.summary || ''}</div>
+                </div>
+              </a>
+            `).join('')}
+          </div>
+        </section>
+      ` : ''}
+
+      ${unnichedAnswers.length ? `
+        <section class="mt-4">
+          <h3 class="mb-2">Unorganized</h3>
+          <div class="flex-col" style="gap:0.5rem">
+            ${unnichedAnswers.map(a => `
+              <a href="/answer/${a.id}" style="text-decoration:none">
+                <div class="card" style="padding:1rem;display:flex;justify-content:space-between;align-items:center">
+                  <div>
+                    <div style="font-family:'Fraunces',serif;font-size:1rem">${a.title}</div>
+                    <div class="muted small">${a.summary || ''}</div>
+                  </div>
+                  <div class="muted small">${a.created_at}</div>
                 </div>
               </a>
             `).join('')}

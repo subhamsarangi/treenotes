@@ -12,11 +12,20 @@ r.get('/answer/:id', (req, res) => {
   const links = query(`
     SELECT al.relation_type, al.id as link_id,
       CASE WHEN al.from_id = ? THEN al.to_id ELSE al.from_id END as other_id,
+      CASE WHEN al.from_id = ? THEN al.relation_type ELSE 
+        CASE 
+          WHEN al.relation_type = 'parent' THEN 'child'
+          WHEN al.relation_type = 'child' THEN 'parent'
+          WHEN al.relation_type = 'prev_sibling' THEN 'next_sibling'
+          WHEN al.relation_type = 'next_sibling' THEN 'prev_sibling'
+          ELSE al.relation_type
+        END
+      END as display_type,
       ans.title as other_title
     FROM answer_links al
     JOIN answers ans ON ans.id = (CASE WHEN al.from_id = ? THEN al.to_id ELSE al.from_id END)
     WHERE al.from_id = ? OR al.to_id = ?
-  `, [a.id, a.id, a.id, a.id]);
+  `, [a.id, a.id, a.id, a.id, a.id]);
 
   let blocks = [];
   try { blocks = JSON.parse(a.content); } catch {}
@@ -48,7 +57,7 @@ r.get('/answer/:id', (req, res) => {
           <div class="flex-gap">
             ${links.map(l => `
               <div style="display:flex;align-items:center;gap:0.4rem">
-                <span class="chip">${l.relation_type.replace('_',' ')}</span>
+                <span class="chip">${l.display_type.replace('_',' ')}</span>
                 <a href="/answer/${l.other_id}">${l.other_title}</a>
                 <form method="POST" action="/answer/${a.id}/unlink/${l.link_id}" style="display:inline">
                   <button type="submit" class="btn btn-ghost small" style="padding:0.2rem 0.4rem;font-size:0.7rem">✕</button>
