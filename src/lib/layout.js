@@ -7,7 +7,6 @@ export function layout(title, body, user = null) {
 <title>${title} — Lumina</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,600;1,300&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
-${extraHead}
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
