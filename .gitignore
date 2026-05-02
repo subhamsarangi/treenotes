@@ -15,3 +15,6 @@ build/
 *.swo
 *~
 .cache/
+export-seed.js
+seed.sql
+data.sqlite

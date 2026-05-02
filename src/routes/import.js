@@ -26,8 +26,8 @@ function matchNiche(niches, value) {
   return { nicheId: null, matchInfo: null };
 }
 
-r.get('/import', (req, res) => {
-  const niches = query('SELECT * FROM niches');
+r.get('/import', async (req, res) => {
+  const niches = await query('SELECT * FROM niches');
   res.send(layout('Import Answer', `
     <div class="container" style="max-width:680px">
       <h1 class="mt-4 mb-1">Import Answer</h1>
@@ -90,17 +90,17 @@ r.get('/import', (req, res) => {
   `));
 });
 
-r.post('/import', (req, res) => {
+r.post('/import', async (req, res) => {
   let data;
   try { data = JSON.parse(req.body.payload); } catch { return res.redirect('/import'); }
 
-  const niches = query('SELECT * FROM niches');
+  const niches = await query('SELECT * FROM niches');
   const { nicheId, matchInfo } = matchNiche(niches, data.niche);
 
   const id = generateId(data.title);
   const createdAt = data.created_at || new Date().toISOString().split('T')[0];
 
-  run('INSERT INTO answers (id, title, niche_id, summary, content, created_at, starred) VALUES (?,?,?,?,?,?,0)',
+  await run('INSERT INTO answers (id, title, niche_id, summary, content, created_at, starred) VALUES (?,?,?,?,?,?,0)',
     [id, data.title, nicheId, data.summary || '', JSON.stringify(data.content), createdAt]);
 
   if (!nicheId && data.niche) {

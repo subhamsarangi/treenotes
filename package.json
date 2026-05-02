@@ -6,13 +6,8 @@
     "dev": "node server.js"
   },
   "dependencies": {
-    "better-sqlite3": "^9.4.3",
+    "@libsql/client": "^0.17.3",
     "express": "^4.22.1",
-    "marked": "^12.0.2",
-    "slugify": "^1.6.9",
-    "sql.js": "^1.14.1"
-  },
-  "devDependencies": {
-    "nodemon": "^3.1.14"
+    "slugify": "^1.6.9"
   }
 }

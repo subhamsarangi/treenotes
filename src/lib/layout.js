@@ -63,8 +63,8 @@ nav {
 .nav-links a { color: var(--muted); font-size: 0.85rem; letter-spacing: 0.05em; text-transform: uppercase; }
 .nav-links a:hover { color: var(--text); text-decoration: none; }
 
-.container { max-width: 860px; margin: 0 auto; padding: 3rem 2rem; }
-.container-wide { max-width: 1100px; margin: 0 auto; padding: 3rem 2rem; }
+.container { max-width: 1000px; margin: 0 auto; padding: 3rem 2rem; }
+.container-wide { max-width: 1300px; margin: 0 auto; padding: 3rem 2rem; }
 
 h1 { font-family: 'Fraunces', serif; font-weight: 300; font-size: 2.4rem; letter-spacing: -0.03em; line-height: 1.2; }
 h2 { font-family: 'Fraunces', serif; font-weight: 300; font-size: 1.6rem; letter-spacing: -0.02em; }
@@ -85,11 +85,11 @@ h3 { font-size: 1rem; font-weight: 500; letter-spacing: 0.03em; text-transform: 
   transition: all 0.15s;
   text-decoration: none;
 }
-.btn:hover { background: var(--surface2); border-color: var(--accent); color: var(--accent); text-decoration: none; }
+.btn:hover { background: var(--surface2); border-color: var(--accent); color: var(--text); text-decoration: none; }
 .btn-primary { background: var(--accent); color: #0c0c0f; border-color: var(--accent); font-weight: 500; }
-.btn-primary:hover { opacity: 0.88; color: #0c0c0f; }
+.btn-primary:hover { opacity: 0.88; color: #fff; }
 .btn-danger { border-color: var(--danger); color: var(--danger); }
-.btn-danger:hover { background: var(--danger); color: #0c0c0f; }
+.btn-danger:hover { background: var(--danger); color: #fff; }
 .btn-ghost { background: transparent; border-color: transparent; color: var(--muted); }
 .btn-ghost:hover { background: var(--surface); color: var(--text); border-color: var(--border); }
 
@@ -228,6 +228,7 @@ label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; co
   <a href="/" class="nav-logo">✦ Lumina</a>
   <div class="nav-links">
     <a href="/">Home</a>
+    <a href="/prompts">Prompts</a>
     <a href="/import">Import</a>
     <a href="/niches">Niches</a>
   </div>

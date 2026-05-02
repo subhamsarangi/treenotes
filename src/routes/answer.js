@@ -5,15 +5,16 @@ import { renderBlocks } from '../lib/utils.js';
 
 const r = Router();
 
-r.get('/answer/:id', (req, res) => {
-  const a = query('SELECT a.*, n.name as niche_name, n.color as niche_color, n.id as niche_id FROM answers a LEFT JOIN niches n ON a.niche_id = n.id WHERE a.id = ?', [req.params.id])[0];
+r.get('/answer/:id', async (req, res) => {
+  const rows = await query('SELECT a.*, n.name as niche_name, n.color as niche_color, n.id as niche_id FROM answers a LEFT JOIN niches n ON a.niche_id = n.id WHERE a.id = ?', [req.params.id]);
+  const a = rows[0];
   if (!a) return res.redirect('/');
 
-  const links = query(`
+  const links = await query(`
     SELECT al.relation_type, al.id as link_id,
       CASE WHEN al.from_id = ? THEN al.to_id ELSE al.from_id END as other_id,
-      CASE WHEN al.from_id = ? THEN al.relation_type ELSE 
-        CASE 
+      CASE WHEN al.from_id = ? THEN al.relation_type ELSE
+        CASE
           WHEN al.relation_type = 'parent' THEN 'child'
           WHEN al.relation_type = 'child' THEN 'parent'
           WHEN al.relation_type = 'prev_sibling' THEN 'next_sibling'
@@ -97,10 +98,11 @@ r.get('/answer/:id', (req, res) => {
   `));
 });
 
-r.get('/answer/:id/pick-niche', (req, res) => {
-  const a = query('SELECT * FROM answers WHERE id = ?', [req.params.id])[0];
+r.get('/answer/:id/pick-niche', async (req, res) => {
+  const rows = await query('SELECT * FROM answers WHERE id = ?', [req.params.id]);
+  const a = rows[0];
   if (!a) return res.redirect('/');
-  const niches = query('SELECT * FROM niches');
+  const niches = await query('SELECT * FROM niches');
   const unmatched = req.query.unmatched || '';
 
   res.send(layout('Pick a Niche', `
@@ -126,21 +128,22 @@ r.get('/answer/:id/pick-niche', (req, res) => {
   `));
 });
 
-r.post('/answer/:id/pick-niche', (req, res) => {
-  run('UPDATE answers SET niche_id = ? WHERE id = ?', [req.body.niche_id, req.params.id]);
+r.post('/answer/:id/pick-niche', async (req, res) => {
+  await run('UPDATE answers SET niche_id = ? WHERE id = ?', [req.body.niche_id, req.params.id]);
   res.redirect('/answer/' + req.params.id);
 });
 
-r.post('/answer/:id/star', (req, res) => {
-  const a = query('SELECT starred FROM answers WHERE id = ?', [req.params.id])[0];
+r.post('/answer/:id/star', async (req, res) => {
+  const rows = await query('SELECT starred FROM answers WHERE id = ?', [req.params.id]);
+  const a = rows[0];
   if (!a) return res.redirect('/');
-  run('UPDATE answers SET starred = ? WHERE id = ?', [a.starred ? 0 : 1, req.params.id]);
+  await run('UPDATE answers SET starred = ? WHERE id = ?', [a.starred ? 0 : 1, req.params.id]);
   res.redirect('/answer/' + req.params.id);
 });
 
-r.post('/answer/:id/delete', (req, res) => {
+r.post('/answer/:id/delete', async (req, res) => {
   const id = req.params.id;
-  const children = query('SELECT from_id FROM answer_links WHERE to_id = ? AND relation_type = ?', [id, 'parent']);
+  const children = await query('SELECT from_id FROM answer_links WHERE to_id = ? AND relation_type = ?', [id, 'parent']);
   if (children.length) {
     return res.send(layout('Cannot Delete', `
       <div class="container"><div class="card mt-4" style="border-color:var(--danger)">
@@ -150,20 +153,21 @@ r.post('/answer/:id/delete', (req, res) => {
       </div></div>
     `));
   }
-  run('DELETE FROM answer_links WHERE from_id = ? OR to_id = ?', [id, id]);
-  run('DELETE FROM answers WHERE id = ?', [id]);
+  await run('DELETE FROM answer_links WHERE from_id = ? OR to_id = ?', [id, id]);
+  await run('DELETE FROM answers WHERE id = ?', [id]);
   res.redirect('/');
 });
 
-r.post('/answer/:id/unlink/:linkId', (req, res) => {
-  run('DELETE FROM answer_links WHERE id = ?', [req.params.linkId]);
+r.post('/answer/:id/unlink/:linkId', async (req, res) => {
+  await run('DELETE FROM answer_links WHERE id = ?', [req.params.linkId]);
   res.redirect('/answer/' + req.params.id);
 });
 
-r.get('/answer/:id/edit-meta', (req, res) => {
-  const a = query('SELECT * FROM answers WHERE id = ?', [req.params.id])[0];
+r.get('/answer/:id/edit-meta', async (req, res) => {
+  const rows = await query('SELECT * FROM answers WHERE id = ?', [req.params.id]);
+  const a = rows[0];
   if (!a) return res.redirect('/');
-  const niches = query('SELECT * FROM niches');
+  const niches = await query('SELECT * FROM niches');
   res.send(layout('Edit Metadata', `
     <div class="container" style="max-width:560px">
       <a href="/answer/${a.id}" class="muted small mt-4" style="display:block">← Back</a>
@@ -202,16 +206,18 @@ r.get('/answer/:id/edit-meta', (req, res) => {
   `));
 });
 
-r.post('/answer/:id/edit-meta', (req, res) => {
+r.post('/answer/:id/edit-meta', async (req, res) => {
   const { title, niche_id, summary, created_at, image } = req.body;
-  run('UPDATE answers SET title=?, niche_id=?, summary=?, created_at=?, image=? WHERE id=?',
+  await run('UPDATE answers SET title=?, niche_id=?, summary=?, created_at=?, image=? WHERE id=?',
     [title, niche_id || null, summary || '', created_at, image || null, req.params.id]);
   res.redirect('/answer/' + req.params.id);
 });
 
-r.get('/answer/:id/edit-content', (req, res) => {
-  const a = query('SELECT * FROM answers WHERE id = ?', [req.params.id])[0];
+r.get('/answer/:id/edit-content', async (req, res) => {
+  const rows = await query('SELECT * FROM answers WHERE id = ?', [req.params.id]);
+  const a = rows[0];
   if (!a) return res.redirect('/');
+  const prettifiedContent = JSON.stringify(JSON.parse(a.content), null, 2);
   res.send(layout('Edit Content', `
     <div class="container" style="max-width:680px">
       <a href="/answer/${a.id}" class="muted small mt-4" style="display:block">← Back</a>
@@ -220,7 +226,7 @@ r.get('/answer/:id/edit-content', (req, res) => {
       <div id="error-box" class="card mb-2" style="display:none;border-color:var(--danger);color:var(--danger)"></div>
       <form id="content-form" method="POST">
         <div class="form-group">
-          <textarea name="content" id="content-input" style="min-height:400px;font-family:'DM Mono',monospace;font-size:0.8rem">${escAttr(a.content)}</textarea>
+          <textarea name="content" id="content-input" style="min-height:400px;font-family:'DM Mono',monospace;font-size:0.8rem">${escAttr(prettifiedContent)}</textarea>
         </div>
         <div class="flex-gap">
           <button type="button" class="btn" onclick="validate()">Validate</button>
@@ -248,10 +254,10 @@ r.get('/answer/:id/edit-content', (req, res) => {
   `));
 });
 
-r.post('/answer/:id/edit-content', (req, res) => {
+r.post('/answer/:id/edit-content', async (req, res) => {
   try {
     JSON.parse(req.body.content);
-    run('UPDATE answers SET content=? WHERE id=?', [req.body.content, req.params.id]);
+    await run('UPDATE answers SET content=? WHERE id=?', [req.body.content, req.params.id]);
   } catch {}
   res.redirect('/answer/' + req.params.id);
 });

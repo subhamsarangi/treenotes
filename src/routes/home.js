@@ -4,12 +4,12 @@ import { layout } from '../lib/layout.js';
 
 const r = Router();
 
-r.get('/', (req, res) => {
-  const niches = query('SELECT * FROM niches');
-  const starred = query('SELECT a.*, n.name as niche_name, n.color as niche_color FROM answers a LEFT JOIN niches n ON a.niche_id = n.id WHERE a.starred = 1 ORDER BY a.created_at DESC LIMIT 6');
-  const counts = query('SELECT niche_id, COUNT(*) as cnt FROM answers GROUP BY niche_id');
+r.get('/', async (req, res) => {
+  const niches = await query('SELECT * FROM niches');
+  const starred = await query('SELECT a.*, n.name as niche_name, n.color as niche_color FROM answers a LEFT JOIN niches n ON a.niche_id = n.id WHERE a.starred = 1 ORDER BY a.created_at DESC LIMIT 6');
+  const counts = await query('SELECT niche_id, COUNT(*) as cnt FROM answers GROUP BY niche_id');
   const countMap = Object.fromEntries(counts.map(c => [c.niche_id, c.cnt]));
-  const unnichedAnswers = query('SELECT * FROM answers WHERE niche_id IS NULL ORDER BY created_at DESC');
+  const unnichedAnswers = await query('SELECT * FROM answers WHERE niche_id IS NULL ORDER BY created_at DESC');
 
   res.send(layout('Home', `
     <div class="container-wide">

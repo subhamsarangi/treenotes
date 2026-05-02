@@ -8,8 +8,8 @@ const r = Router();
 const COLORS = ['#c8b4fa','#7ee8b4','#f4a96a','#f87171','#60c4f8','#f9d96a','#e884c4'];
 const ICONS = ['✦','◈','◉','⬡','◆','▲','●','★','⬢','◎'];
 
-r.get('/niches', (req, res) => {
-  const niches = query('SELECT n.*, COUNT(a.id) as cnt FROM niches n LEFT JOIN answers a ON a.niche_id = n.id GROUP BY n.id');
+r.get('/niches', async (req, res) => {
+  const niches = await query('SELECT n.*, COUNT(a.id) as cnt FROM niches n LEFT JOIN answers a ON a.niche_id = n.id GROUP BY n.id');
   res.send(layout('Niches', `
     <div class="container">
       <div class="flex-between mt-4 mb-2">
@@ -41,23 +41,24 @@ r.get('/niches/new', (req, res) => {
   res.send(nicheForm(null));
 });
 
-r.post('/niches/new', (req, res) => {
+r.post('/niches/new', async (req, res) => {
   const { name, description, color, icon, image } = req.body;
   const id = generateId(name);
-  run('INSERT INTO niches (id, name, description, color, icon, image) VALUES (?,?,?,?,?,?)',
+  await run('INSERT INTO niches (id, name, description, color, icon, image) VALUES (?,?,?,?,?,?)',
     [id, name, description || '', color || COLORS[0], icon || '✦', image || null]);
   res.redirect('/niches');
 });
 
-r.get('/niches/:id/edit', (req, res) => {
-  const niche = query('SELECT * FROM niches WHERE id = ?', [req.params.id])[0];
+r.get('/niches/:id/edit', async (req, res) => {
+  const niches = await query('SELECT * FROM niches WHERE id = ?', [req.params.id]);
+  const niche = niches[0];
   if (!niche) return res.redirect('/niches');
   res.send(nicheForm(niche));
 });
 
-r.post('/niches/:id/edit', (req, res) => {
+r.post('/niches/:id/edit', async (req, res) => {
   const { name, description, color, icon, image } = req.body;
-  run('UPDATE niches SET name=?, description=?, color=?, icon=?, image=? WHERE id=?',
+  await run('UPDATE niches SET name=?, description=?, color=?, icon=?, image=? WHERE id=?',
     [name, description || '', color, icon, image || null, req.params.id]);
   res.redirect('/niches');
 });

@@ -4,12 +4,13 @@ import { layout } from '../lib/layout.js';
 
 const r = Router();
 
-r.get('/answer/:id/link', (req, res) => {
-  const a = query('SELECT * FROM answers WHERE id = ?', [req.params.id])[0];
+r.get('/answer/:id/link', async (req, res) => {
+  const rows = await query('SELECT * FROM answers WHERE id = ?', [req.params.id]);
+  const a = rows[0];
   if (!a) return res.redirect('/');
 
   const { search = '', sort = 'created_at', order = 'desc', niche = '' } = req.query;
-  const niches = query('SELECT * FROM niches');
+  const niches = await query('SELECT * FROM niches');
 
   let sql = 'SELECT ans.*, n.name as niche_name FROM answers ans LEFT JOIN niches n ON ans.niche_id = n.id WHERE ans.id != ?';
   const params = [a.id];
@@ -21,9 +22,9 @@ r.get('/answer/:id/link', (req, res) => {
   const safeOrder = order === 'asc' ? 'ASC' : 'DESC';
   sql += ` ORDER BY ans.${safeSort} ${safeOrder}`;
 
-  const answers = query(sql, params);
+  const answers = await query(sql, params);
 
-  const existingLinks = query(`
+  const existingLinks = await query(`
     SELECT CASE WHEN from_id = ? THEN to_id ELSE from_id END as other_id, relation_type, id as link_id
     FROM answer_links WHERE from_id = ? OR to_id = ?
   `, [a.id, a.id, a.id]);
@@ -70,7 +71,6 @@ r.get('/answer/:id/link', (req, res) => {
                 ` : `
                   <form method="POST" action="/answer/${a.id}/link">
                     <input type="hidden" name="to_id" value="${ans.id}">
-                    <input type="hidden" name="redirect_search" value="${encodeURIComponent(req.url)}">
                     <select name="relation_type" style="width:auto;font-size:0.8rem">
                       <option value="friend">friend</option>
                       <option value="parent">parent</option>
@@ -89,25 +89,24 @@ r.get('/answer/:id/link', (req, res) => {
   `));
 });
 
-r.post('/answer/:id/link', (req, res) => {
-  const { to_id, relation_type, redirect_search } = req.body;
+r.post('/answer/:id/link', async (req, res) => {
+  const { to_id, relation_type } = req.body;
   const from_id = req.params.id;
 
   if (!to_id || !relation_type) return res.redirect(`/answer/${from_id}/link`);
 
-  const already = query('SELECT id FROM answer_links WHERE (from_id=? AND to_id=?) OR (from_id=? AND to_id=?)',
+  const already = await query('SELECT id FROM answer_links WHERE (from_id=? AND to_id=?) OR (from_id=? AND to_id=?)',
     [from_id, to_id, to_id, from_id]);
   if (!already.length) {
-    run('INSERT INTO answer_links (from_id, to_id, relation_type) VALUES (?,?,?)', [from_id, to_id, relation_type]);
+    await run('INSERT INTO answer_links (from_id, to_id, relation_type) VALUES (?,?,?)', [from_id, to_id, relation_type]);
   }
 
   res.redirect(`/answer/${from_id}`);
 });
 
-r.post('/answer/:id/unlink/:linkId', (req, res) => {
-  run('DELETE FROM answer_links WHERE id = ?', [req.params.linkId]);
-  const ref = req.headers.referer || `/answer/${req.params.id}`;
-  res.redirect(ref);
+r.post('/answer/:id/unlink/:linkId', async (req, res) => {
+  await run('DELETE FROM answer_links WHERE id = ?', [req.params.linkId]);
+  res.redirect('/answer/' + req.params.id);
 });
 
 export default r;

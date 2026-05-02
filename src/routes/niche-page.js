@@ -4,8 +4,9 @@ import { layout } from '../lib/layout.js';
 
 const r = Router();
 
-r.get('/niche/:id', (req, res) => {
-  const niche = query('SELECT * FROM niches WHERE id = ?', [req.params.id])[0];
+r.get('/niche/:id', async (req, res) => {
+  const niches = await query('SELECT * FROM niches WHERE id = ?', [req.params.id]);
+  const niche = niches[0];
   if (!niche) return res.redirect('/');
 
   const { search = '', sort = 'created_at', order = 'desc', starred } = req.query;
@@ -20,7 +21,7 @@ r.get('/niche/:id', (req, res) => {
   const safeOrder = order === 'asc' ? 'ASC' : 'DESC';
   sql += ` ORDER BY ${safeSort} ${safeOrder}`;
 
-  const answers = query(sql, params);
+  const answers = await query(sql, params);
 
   res.send(layout(niche.name, `
     <div class="container">

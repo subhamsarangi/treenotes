@@ -1,19 +1,16 @@
-import initSqlJs from 'sql.js';
-import fs from 'fs';
-import path from 'path';
+import { createClient } from '@libsql/client';
 
-const DB_PATH = './data.sqlite';
-let db;
+let client;
 
 export async function getDb() {
-  if (db) return db;
-  const SQL = await initSqlJs();
-  if (fs.existsSync(DB_PATH)) {
-    db = new SQL.Database(fs.readFileSync(DB_PATH));
-  } else {
-    db = new SQL.Database();
-  }
-  db.run(`
+  if (client) return client;
+
+  client = createClient({
+    url: process.env.TURSO_DATABASE_URL || 'file:./data.sqlite',
+    authToken: process.env.TURSO_AUTH_TOKEN,
+  });
+
+  await client.executeMultiple(`
     CREATE TABLE IF NOT EXISTS niches (
       id TEXT PRIMARY KEY,
       name TEXT NOT NULL,
@@ -38,26 +35,42 @@ export async function getDb() {
       to_id TEXT NOT NULL REFERENCES answers(id),
       relation_type TEXT NOT NULL CHECK(relation_type IN ('parent','prev_sibling','next_sibling','friend'))
     );
+    CREATE INDEX IF NOT EXISTS idx_answers_niche_id ON answers(niche_id);
+    CREATE INDEX IF NOT EXISTS idx_answers_starred ON answers(starred);
+    CREATE INDEX IF NOT EXISTS idx_answer_links_from ON answer_links(from_id);
+    CREATE INDEX IF NOT EXISTS idx_answer_links_to ON answer_links(to_id);
+    CREATE TABLE IF NOT EXISTS prompts (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      content TEXT NOT NULL
+    );
   `);
-  save();
-  return db;
+
+  // Seed prompts from files if table is empty
+  const existing = await client.execute('SELECT COUNT(*) as cnt FROM prompts');
+  if (existing.rows[0].cnt === 0) {
+    const { readdirSync, readFileSync, existsSync } = await import('fs');
+    const { join } = await import('path');
+    const promptsDir = './prompts';
+    if (existsSync(promptsDir)) {
+      const files = readdirSync(promptsDir).filter(f => f.endsWith('.txt'));
+      for (const file of files) {
+        const content = readFileSync(join(promptsDir, file), 'utf-8');
+        const id = file.replace('.txt', '');
+        const name = id.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        await client.execute({ sql: 'INSERT OR IGNORE INTO prompts (id, name, content) VALUES (?,?,?)', args: [id, name, content] });
+      }
+    }
+  }
+
+  return client;
 }
 
-export function save() {
-  if (!db) return;
-  fs.writeFileSync(DB_PATH, Buffer.from(db.export()));
+export async function query(sql, params = []) {
+  const result = await client.execute({ sql, args: params });
+  return result.rows;
 }
 
-export function query(sql, params = []) {
-  const stmt = db.prepare(sql);
-  stmt.bind(params);
-  const rows = [];
-  while (stmt.step()) rows.push(stmt.getAsObject());
-  stmt.free();
-  return rows;
-}
-
-export function run(sql, params = []) {
-  db.run(sql, params);
-  save();
+export async function run(sql, params = []) {
+  await client.execute({ sql, args: params });
 }
