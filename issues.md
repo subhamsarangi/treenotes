@@ -1,8 +1,6 @@
-[] links not clickable
+[] make all urls in the answers clickable which opens them in a new tab
 
-[] fuzzy niche mapping is not happening. eg a json object has  "machine-learning" as the value for the niche key but it was set to null
-
-[] notes without niches are not visible in the UI anywhere
+[] notes without niches are not visible in the UI anywhere.
 
 [] linking needs to go both ways. parent-child not parent-parent
 
