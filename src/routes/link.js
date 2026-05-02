@@ -101,8 +101,7 @@ r.post('/answer/:id/link', (req, res) => {
     run('INSERT INTO answer_links (from_id, to_id, relation_type) VALUES (?,?,?)', [from_id, to_id, relation_type]);
   }
 
-  const back = redirect_search ? decodeURIComponent(redirect_search) : `/answer/${from_id}/link`;
-  res.redirect(back);
+  res.redirect(`/answer/${from_id}`);
 });
 
 r.post('/answer/:id/unlink/:linkId', (req, res) => {

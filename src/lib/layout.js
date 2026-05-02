@@ -179,6 +179,48 @@ label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; co
 .flex-gap { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; }
 .muted { color: var(--muted); }
 .small { font-size: 0.82rem; }
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.toggle input {
+  width: 40px;
+  height: 24px;
+  appearance: none;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.2s;
+  padding: 0;
+  margin: 0;
+}
+
+.toggle input:checked {
+  background: var(--accent2);
+  border-color: var(--accent2);
+}
+
+.toggle input::before {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--surface);
+  top: 1px;
+  left: 1px;
+  transition: left 0.2s;
+}
+
+.toggle input:checked::before {
+  left: 19px;
+}
 </style>
 </head>
 <body>
