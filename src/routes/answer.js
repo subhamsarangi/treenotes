@@ -230,7 +230,8 @@ r.get('/answer/:id/edit-content', async (req, res) => {
       <div id="error-box" class="card mb-2" style="display:none;border-color:var(--danger);color:var(--danger)"></div>
       <form id="content-form" method="POST">
         <div class="form-group">
-          <textarea name="content" id="content-input" style="min-height:400px;font-family:'DM Mono',monospace;font-size:0.8rem">${escAttr(prettifiedContent)}</textarea>
+          <div id="cm-editor" style="border:1px solid var(--border);border-radius:var(--r);overflow:hidden;min-height:400px;font-size:0.8rem"></div>
+          <textarea name="content" id="content-input" style="display:none">${escAttr(prettifiedContent)}</textarea>
         </div>
         <div class="flex-gap">
           <button type="button" class="btn" onclick="validate()">Validate</button>
@@ -239,20 +240,62 @@ r.get('/answer/:id/edit-content', async (req, res) => {
         </div>
       </form>
     </div>
-    <script>
-      function validate() {
+    <script type="module">
+      import { EditorView, keymap, lineNumbers, highlightActiveLine } from 'https://esm.sh/@codemirror/view@6';
+      import { EditorState } from 'https://esm.sh/@codemirror/state@6';
+      import { json } from 'https://esm.sh/@codemirror/lang-json@6';
+      import { oneDark } from 'https://esm.sh/@codemirror/theme-one-dark@6';
+      import { defaultKeymap, history, historyKeymap } from 'https://esm.sh/@codemirror/commands@6';
+      import { bracketMatching } from 'https://esm.sh/@codemirror/language@6';
+      import { closeBrackets, closeBracketsKeymap } from 'https://esm.sh/@codemirror/autocomplete@6';
+
+      const initialContent = document.getElementById('content-input').value;
+
+      const view = new EditorView({
+        state: EditorState.create({
+          doc: initialContent,
+          extensions: [
+            lineNumbers(),
+            highlightActiveLine(),
+            history(),
+            bracketMatching(),
+            closeBrackets(),
+            json(),
+            oneDark,
+            keymap.of([...defaultKeymap, ...historyKeymap, ...closeBracketsKeymap]),
+            EditorView.theme({
+              '&': { background: 'var(--surface)', height: '400px' },
+              '.cm-scroller': { fontFamily: "'DM Mono', monospace", fontSize: '0.8rem', overflow: 'auto' },
+              '.cm-content': { padding: '0.8rem 0' },
+              '.cm-gutters': { background: 'var(--surface2)', border: 'none', borderRight: '1px solid var(--border)' },
+              '.cm-activeLineGutter': { background: 'var(--surface)' },
+            }),
+          ],
+        }),
+        parent: document.getElementById('cm-editor'),
+      });
+
+      window.validate = function() {
         try {
-          JSON.parse(document.getElementById('content-input').value);
+          JSON.parse(view.state.doc.toString());
           document.getElementById('error-box').style.display = 'none';
           alert('Valid JSON ✓');
         } catch(e) {
           const b = document.getElementById('error-box');
           b.textContent = e.message; b.style.display = 'block';
         }
-      }
+      };
+
       document.getElementById('content-form').addEventListener('submit', function(e) {
-        try { JSON.parse(document.getElementById('content-input').value); }
-        catch(err) { e.preventDefault(); const b = document.getElementById('error-box'); b.textContent = err.message; b.style.display = 'block'; }
+        const val = view.state.doc.toString();
+        try {
+          JSON.parse(val);
+          document.getElementById('content-input').value = val;
+        } catch(err) {
+          e.preventDefault();
+          const b = document.getElementById('error-box');
+          b.textContent = err.message; b.style.display = 'block';
+        }
       });
     </script>
   `, req.user));

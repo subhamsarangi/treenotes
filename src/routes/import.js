@@ -41,7 +41,8 @@ r.get('/import', async (req, res) => {
 
       <div class="form-group">
         <label>JSON</label>
-        <textarea id="json-input" style="min-height:300px;font-family:'DM Mono',monospace;font-size:0.8rem" placeholder='{"title":"...","niche":"machine-learning","summary":"...","content":[]}'></textarea>
+        <div id="cm-editor" style="border:1px solid var(--border);border-radius:var(--r);overflow:hidden;min-height:300px;font-size:0.8rem"></div>
+        <textarea id="json-input" name="json-input" style="display:none" placeholder='{"title":"...","niche":"machine-learning","summary":"...","content":[]}'></textarea>
       </div>
 
       <div id="preview" style="display:none" class="card mb-3">
@@ -59,14 +60,48 @@ r.get('/import', async (req, res) => {
       </form>
     </div>
 
-    <script>
+    <script type="module">
+      import { EditorView, keymap, lineNumbers, highlightActiveLine } from 'https://esm.sh/@codemirror/view@6';
+      import { EditorState } from 'https://esm.sh/@codemirror/state@6';
+      import { json } from 'https://esm.sh/@codemirror/lang-json@6';
+      import { oneDark } from 'https://esm.sh/@codemirror/theme-one-dark@6';
+      import { defaultKeymap, history, historyKeymap } from 'https://esm.sh/@codemirror/commands@6';
+      import { bracketMatching, syntaxHighlighting, defaultHighlightStyle } from 'https://esm.sh/@codemirror/language@6';
+      import { closeBrackets, closeBracketsKeymap } from 'https://esm.sh/@codemirror/autocomplete@6';
+
+      const view = new EditorView({
+        state: EditorState.create({
+          doc: '',
+          extensions: [
+            lineNumbers(),
+            highlightActiveLine(),
+            history(),
+            bracketMatching(),
+            closeBrackets(),
+            json(),
+            oneDark,
+            keymap.of([...defaultKeymap, ...historyKeymap, ...closeBracketsKeymap]),
+            EditorView.theme({
+              '&': { background: 'var(--surface)', height: '300px' },
+              '.cm-scroller': { fontFamily: "'DM Mono', monospace", fontSize: '0.8rem', overflow: 'auto' },
+              '.cm-content': { padding: '0.8rem 0' },
+              '.cm-gutters': { background: 'var(--surface2)', border: 'none', borderRight: '1px solid var(--border)' },
+              '.cm-activeLineGutter': { background: 'var(--surface)' },
+            }),
+          ],
+        }),
+        parent: document.getElementById('cm-editor'),
+      });
+
       function getJson() {
-        try { return JSON.parse(document.getElementById('json-input').value); }
+        const val = view.state.doc.toString();
+        try { return JSON.parse(val); }
         catch(e) { showError('Invalid JSON: ' + e.message); return null; }
       }
       function showError(msg) { const b = document.getElementById('error-box'); b.textContent = msg; b.style.display = 'block'; }
       function clearError() { document.getElementById('error-box').style.display = 'none'; }
-      function preview() {
+
+      window.preview = function() {
         clearError();
         const data = getJson();
         if (!data) return;
@@ -76,8 +111,9 @@ r.get('/import', async (req, res) => {
           '<div><strong>Summary:</strong> ' + (data.summary || '—') + '</div>' +
           '<div><strong>Blocks:</strong> ' + (Array.isArray(data.content) ? data.content.length + ' blocks' : 'invalid') + '</div>';
         document.getElementById('preview').style.display = 'block';
-      }
-      function importAnswer() {
+      };
+
+      window.importAnswer = function() {
         clearError();
         const data = getJson();
         if (!data) return;
@@ -85,7 +121,7 @@ r.get('/import', async (req, res) => {
         if (!Array.isArray(data.content)) return showError('content must be an array');
         document.getElementById('hidden-payload').value = JSON.stringify(data);
         document.getElementById('hidden-form').submit();
-      }
+      };
     </script>
   `, req.user));
 });
