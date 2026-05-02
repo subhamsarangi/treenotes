@@ -1,0 +1,15 @@
+{
+  "name": "ai-answers",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^9.4.3",
+    "express": "^4.22.1",
+    "marked": "^12.0.2",
+    "slugify": "^1.6.9",
+    "sql.js": "^1.14.1"
+  }
+}

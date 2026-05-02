@@ -1,0 +1,17 @@
+Answer the following question in a valid structured JSON. Return only the JSON in a single code block start to end, no explanation, no markdown fences.
+
+Schema:
+- title: string
+- niche: string (short slug like "machine-learning" or "philosophy")
+- created_at: today's date as YYYY-MM-DD
+- summary: one sentence, max 15 words
+- content: array of blocks. Available block types:
+    { "type": "text", "value": "..." }
+    { "type": "heading", "level": 2, "value": "..." }
+    { "type": "code", "lang": "...", "value": "..." }
+    { "type": "callout", "variant": "tip|info|warning|danger", "value": "..." }
+    { "type": "list", "ordered": true|false, "items": ["..."] }
+    { "type": "table", "headers": ["..."], "rows": [["..."]] }
+    { "type": "divider" }
+
+Question: [YOUR QUESTION HERE]
