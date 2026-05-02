@@ -34,7 +34,7 @@ r.get('/niches', async (req, res) => {
         `).join('') || '<div class="muted">No niches yet.</div>'}
       </div>
     </div>
-  `));
+  `, req.user));
 });
 
 r.get('/niches/new', (req, res) => {

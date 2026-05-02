@@ -88,7 +88,7 @@ r.get('/niche/:id', async (req, res) => {
         </div>
       ` : `<div class="card" style="text-align:center;padding:3rem;color:var(--muted)">No answers found in this niche.</div>`}
     </div>
-  `));
+  `, req.user));
 });
 
 export default r;

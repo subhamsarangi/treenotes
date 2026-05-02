@@ -87,7 +87,7 @@ r.get('/import', async (req, res) => {
         document.getElementById('hidden-form').submit();
       }
     </script>
-  `));
+  `, req.user));
 });
 
 r.post('/import', async (req, res) => {

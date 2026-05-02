@@ -95,7 +95,7 @@ r.get('/answer/:id', async (req, res) => {
         </div>
       </div>
     </div>
-  `));
+  `, req.user));
 });
 
 r.get('/answer/:id/pick-niche', async (req, res) => {
@@ -125,7 +125,7 @@ r.get('/answer/:id/pick-niche', async (req, res) => {
       </div>
       <a href="/answer/${a.id}" class="btn btn-ghost mt-3">Skip</a>
     </div>
-  `));
+  `, req.user));
 });
 
 r.post('/answer/:id/pick-niche', async (req, res) => {
@@ -151,7 +151,7 @@ r.post('/answer/:id/delete', async (req, res) => {
         <p class="mt-2">Other pages are linked to this as their parent. Remove those links first.</p>
         <a href="/answer/${id}" class="btn mt-3">← Back</a>
       </div></div>
-    `));
+    `, req.user));
   }
   await run('DELETE FROM answer_links WHERE from_id = ? OR to_id = ?', [id, id]);
   await run('DELETE FROM answers WHERE id = ?', [id]);
@@ -203,7 +203,7 @@ r.get('/answer/:id/edit-meta', async (req, res) => {
         </div>
       </form>
     </div>
-  `));
+  `, req.user));
 });
 
 r.post('/answer/:id/edit-meta', async (req, res) => {
@@ -251,7 +251,7 @@ r.get('/answer/:id/edit-content', async (req, res) => {
         catch(err) { e.preventDefault(); const b = document.getElementById('error-box'); b.textContent = err.message; b.style.display = 'block'; }
       });
     </script>
-  `));
+  `, req.user));
 });
 
 r.post('/answer/:id/edit-content', async (req, res) => {

@@ -36,7 +36,7 @@ r.get('/prompts', async (req, res) => {
         });
       }
     </script>
-  `));
+  `, req.user));
 });
 
 export default r;

@@ -1,4 +1,4 @@
-export function layout(title, body, extraHead = '') {
+export function layout(title, body, user = null) {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -221,9 +221,58 @@ label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; co
 .toggle input:checked::before {
   left: 19px;
 }
+
+/* Page loading bar */
+#nprogress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--accent);
+  z-index: 9999;
+  transition: width 0.3s ease;
+  box-shadow: 0 0 8px var(--accent);
+}
+
+/* Button loading state */
+.btn.loading {
+  opacity: 0.7;
+  pointer-events: none;
+  position: relative;
+}
+.btn.loading::after {
+  content: '';
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  margin-left: 0.4rem;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Page transition overlay */
+#page-loader {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  z-index: 9999;
+  animation: loading-bar 1.2s ease-in-out infinite;
+}
+#page-loader.active { display: block; }
+@keyframes loading-bar {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
 </style>
 </head>
 <body>
+<div id="page-loader"></div>
 <nav>
   <a href="/" class="nav-logo">✦ Lumina</a>
   <div class="nav-links">
@@ -231,9 +280,45 @@ label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; co
     <a href="/prompts">Prompts</a>
     <a href="/import">Import</a>
     <a href="/niches">Niches</a>
+    ${user ? `
+    <a href="/account" style="color:var(--muted);font-size:0.85rem;letter-spacing:0.05em;text-transform:uppercase">${user.email}</a>
+    ` : ''}
   </div>
 </nav>
 ${body}
+<script>
+(function() {
+  const loader = document.getElementById('page-loader');
+
+  // Show loader on navigation links (not buttons, not hash, not external)
+  document.addEventListener('click', function(e) {
+    const a = e.target.closest('a');
+    if (a && a.href && !a.href.startsWith('#') && !a.href.startsWith('javascript') &&
+        a.hostname === location.hostname && !a.classList.contains('no-loader')) {
+      loader.classList.add('active');
+    }
+
+    // Show loading state on submit buttons inside forms
+    const btn = e.target.closest('button[type="submit"], button:not([type])');
+    if (btn && btn.closest('form') && !btn.onclick) {
+      btn.classList.add('loading');
+    }
+  });
+
+  // Show loader on form submit
+  document.addEventListener('submit', function(e) {
+    loader.classList.add('active');
+    const btn = e.target.querySelector('button[type="submit"], button:not([type="button"])');
+    if (btn) btn.classList.add('loading');
+  });
+
+  // Hide loader when page fully loads (back/forward)
+  window.addEventListener('pageshow', function() {
+    loader.classList.remove('active');
+    document.querySelectorAll('.btn.loading').forEach(b => b.classList.remove('loading'));
+  });
+})();
+</script>
 </body>
 </html>`;
 }

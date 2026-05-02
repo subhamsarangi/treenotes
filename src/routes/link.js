@@ -86,7 +86,7 @@ r.get('/answer/:id/link', async (req, res) => {
         }).join('') || '<div class="muted card" style="text-align:center;padding:2rem">No answers found.</div>'}
       </div>
     </div>
-  `));
+  `, req.user));
 });
 
 r.post('/answer/:id/link', async (req, res) => {

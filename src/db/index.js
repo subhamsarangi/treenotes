@@ -44,6 +44,12 @@ export async function getDb() {
       name TEXT NOT NULL,
       content TEXT NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS users (
+      id TEXT PRIMARY KEY,
+      email TEXT NOT NULL UNIQUE,
+      password_hash TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT (date('now'))
+    );
   `);
 
   // Seed prompts from files if table is empty
