@@ -347,6 +347,7 @@ label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; co
     <a href="/prompts">Prompts</a>
     <a href="/import">Import</a>
     <a href="/niches">Niches</a>
+    <a href="/graph">Graph</a>
     ${user ? `
     <a href="/account" style="color:var(--muted);font-size:0.85rem;letter-spacing:0.05em;text-transform:uppercase">${user.email}</a>
     ` : ''}
