@@ -402,7 +402,10 @@ ${body}
   <button onclick="document.getElementById('lightbox').style.display='none'" style="position:absolute;top:1.2rem;right:1.4rem;background:none;border:none;color:#fff;font-size:1.8rem;cursor:pointer;line-height:1;opacity:0.7" aria-label="Close">✕</button>
 </div>
 
-<button id="pwa-install" aria-label="Install app" title="Install Lumina" style="display:none;position:fixed;bottom:1.5rem;right:1.5rem;z-index:300;width:52px;height:52px;border-radius:50%;border:none;background:var(--logo);color:#0c0c0f;font-size:1.4rem;cursor:pointer;box-shadow:0 4px 20px rgba(253,178,1,0.35);transition:transform 0.15s,box-shadow 0.15s;align-items:center;justify-content:center">⬇</button>
+<button id="pwa-install" aria-label="Install app" title="Install Lumina" style="display:none;position:fixed;bottom:1.5rem;right:1.5rem;z-index:300;height:52px;min-width:52px;padding:0 1rem;border-radius:99px;border:2.5px solid #0c0c0f30;background:var(--logo);color:#0c0c0f;font-size:1.5rem;font-weight:700;cursor:pointer;box-shadow:0 4px 20px rgba(253,178,1,0.35);transition:min-width 0.25s ease,padding 0.25s ease,box-shadow 0.15s;align-items:center;justify-content:center;gap:0.5rem;overflow:hidden;white-space:nowrap">
+  <span id="pwa-install-icon" style="flex-shrink:0;line-height:1;display:flex;align-items:center">⬇</span>
+  <span id="pwa-install-label" style="font-family:'Outfit',sans-serif;font-size:0.88rem;font-weight:600;letter-spacing:0.03em;max-width:0;overflow:hidden;transition:max-width 0.25s ease,opacity 0.2s;opacity:0">Install</span>
+</button>
 
 <script>
 (function() {
@@ -420,8 +423,16 @@ ${body}
   // PWA install button
   let deferredPrompt = null;
   const installBtn = document.getElementById('pwa-install');
-  installBtn.addEventListener('mouseover', () => { installBtn.style.transform = 'scale(1.1)'; installBtn.style.boxShadow = '0 6px 28px rgba(253,178,1,0.5)'; });
-  installBtn.addEventListener('mouseout',  () => { installBtn.style.transform = 'scale(1)';   installBtn.style.boxShadow = '0 4px 20px rgba(253,178,1,0.35)'; });
+  installBtn.addEventListener('mouseover', () => {
+    installBtn.style.boxShadow = '0 6px 28px rgba(253,178,1,0.5)';
+    document.getElementById('pwa-install-label').style.maxWidth = '80px';
+    document.getElementById('pwa-install-label').style.opacity = '1';
+  });
+  installBtn.addEventListener('mouseout', () => {
+    installBtn.style.boxShadow = '0 4px 20px rgba(253,178,1,0.35)';
+    document.getElementById('pwa-install-label').style.maxWidth = '0';
+    document.getElementById('pwa-install-label').style.opacity = '0';
+  });
 
   // Already installed — never show button
   const isInstalled = window.matchMedia('(display-mode: standalone)').matches
