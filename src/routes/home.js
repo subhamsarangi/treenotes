@@ -110,6 +110,56 @@ function landingPage() {
         <p class="muted small">Lumina — Personal Knowledge Base &nbsp;·&nbsp; Built with Node.js + Turso</p>
       </div>
     </div>
+
+    <script>
+    (function() {
+      // Animate grid highlight from point A to B without moving real cursor
+      function randPoint() {
+        var margin = 80;
+        return {
+          x: margin + Math.random() * (window.innerWidth  - margin * 2),
+          y: margin + Math.random() * (window.innerHeight - margin * 2)
+        };
+      }
+
+      function animateTo(from, to, duration, onDone) {
+        var start = null;
+        function step(ts) {
+          if (!start) start = ts;
+          var p = Math.min((ts - start) / duration, 1);
+          // ease in-out cubic
+          var e = p < 0.5 ? 4*p*p*p : 1 - Math.pow(-2*p+2,3)/2;
+          var x = from.x + (to.x - from.x) * e;
+          var y = from.y + (to.y - from.y) * e;
+          if (window._gridMove) window._gridMove(x, y);
+          if (p < 1) {
+            requestAnimationFrame(step);
+          } else {
+            // linger briefly then fade out
+            setTimeout(function() {
+              if (window._gridClear) window._gridClear();
+              if (onDone) onDone();
+            }, 600);
+          }
+        }
+        requestAnimationFrame(step);
+      }
+
+      function runDemo() {
+        var a = randPoint();
+        var b = randPoint();
+        // ensure A and B are reasonably far apart
+        while (Math.hypot(b.x - a.x, b.y - a.y) < 300) b = randPoint();
+        animateTo(a, b, 4000, null);
+      }
+
+      // First run on load (slight delay so grid canvas is ready)
+      setTimeout(runDemo, 400);
+
+      // Then repeat every 8 seconds
+      setInterval(runDemo, 8000);
+    })();
+    </script>
   `);
 }
 

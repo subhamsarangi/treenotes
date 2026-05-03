@@ -562,6 +562,10 @@ ${body}
       if (!raf) raf = requestAnimationFrame(draw);
     }
 
+    // Expose for programmatic control (e.g. landing page demo animation)
+    window._gridMove = function(x, y) { tx = x; ty = y; schedule(); };
+    window._gridClear = function() { tx = -9999; ty = -9999; schedule(); };
+
     document.addEventListener('mousemove', function(e) {
       tx = e.clientX; ty = e.clientY;
       schedule();
