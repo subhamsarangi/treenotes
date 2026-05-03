@@ -241,7 +241,7 @@ r.get('/answer/:id/edit-content', async (req, res) => {
         <div class="form-group">
           <div id="cm-spinner" style="border:1px solid var(--border);border-radius:var(--r);min-height:72vh;display:flex;align-items:center;justify-content:center;background:var(--surface)">
             <div style="display:flex;flex-direction:column;align-items:center;gap:1rem;color:var(--muted)">
-              <div style="width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite"></div>
+              <div style="width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--logo);border-radius:50%;animation:spin 0.7s linear infinite"></div>
               <span class="small">Loading editor…</span>
             </div>
           </div>

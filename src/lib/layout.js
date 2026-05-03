@@ -22,13 +22,13 @@ export function layout(title, body, user = null) {
   --surface: #1a1510;
   --surface2: #221c12;
   --border: #2e2518;
-  --accent: #c8b4fa;
+  --accent: #d4c4fb;
   --logo: #fdb201;
   --logo-light: #fde68a;
   --accent2: #7ee8b4;
   --accent3: #f4a96a;
-  --text: #e8e6f0;
-  --muted: #6b6880;
+  --text: #ede9e0;
+  --muted: #7a7060;
   --danger: #f87171;
   --r: 10px;
 }
@@ -68,8 +68,8 @@ nav {
 }
 
 .nav-links { display: flex; gap: 1.5rem; margin-left: auto; align-items: center; }
-.nav-links a { color: var(--muted); font-size: 0.85rem; letter-spacing: 0.05em; text-transform: uppercase; }
-.nav-links a:hover { color: var(--logo); text-decoration: none; }
+.nav-links a:not(.btn) { color: var(--muted); font-size: 0.85rem; letter-spacing: 0.05em; text-transform: uppercase; }
+.nav-links a:not(.btn):hover { color: var(--logo); text-decoration: none; }
 
 .nav-toggle {
   display: none;
@@ -136,9 +136,9 @@ h3 { font-size: 1rem; font-weight: 500; letter-spacing: 0.03em; text-transform: 
   transition: all 0.15s;
   text-decoration: none;
 }
-.btn:hover { background: var(--surface2); border-color: var(--accent); color: var(--text); text-decoration: none; }
+.btn:hover { background: var(--surface2); border-color: var(--logo-light); color: var(--text); text-decoration: none; }
 .btn-primary { background: var(--logo); color: #0c0c0f; border-color: var(--logo); font-weight: 500; }
-.btn-primary:hover { background: var(--logo); border-color: var(--logo); opacity: 0.88; color: #0c0c0f; }
+.btn-primary:hover, a.btn-primary:hover { background: var(--logo); border-color: var(--logo); opacity: 0.88; color: #0c0c0f !important; text-decoration: none; }
 .btn-danger { border-color: var(--danger); color: var(--danger); }
 .btn-danger:hover { background: var(--danger); color: #fff; }
 .btn-ghost { background: transparent; border-color: transparent; color: var(--muted); }
@@ -153,11 +153,11 @@ h3 { font-size: 1rem; font-weight: 500; letter-spacing: 0.03em; text-transform: 
   position: relative;
   z-index: 1;
 }
-.card:hover { border-color: var(--accent); }
+.card:hover { border-color: var(--logo-light); }
 
 input, textarea, select {
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: 1px solid #4a3f2e;
   border-radius: var(--r);
   color: var(--text);
   font-family: 'Outfit', sans-serif;
@@ -167,10 +167,10 @@ input, textarea, select {
   outline: none;
   transition: border-color 0.15s;
 }
-input:focus, textarea:focus, select:focus { border-color: var(--accent); }
+input:focus, textarea:focus, select:focus { border-color: var(--logo); }
 textarea { resize: vertical; min-height: 120px; }
 
-label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); display: block; margin-bottom: 0.4rem; }
+label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text); display: block; margin-bottom: 0.4rem; }
 
 .form-group { margin-bottom: 1.2rem; }
 
@@ -434,7 +434,10 @@ ${body}
   const isInstalled = window.matchMedia('(display-mode: standalone)').matches
     || window.navigator.standalone === true;
 
-  if (!isInstalled) {
+  // Hide install button on account page
+  if (window.location.pathname === '/account') {
+    installBtn.remove();
+  } else if (!isInstalled) {
     // Show button if prompt was captured on a previous page this session
     if (sessionStorage.getItem('lumina-pwa-prompt') === '1') {
       installBtn.style.display = 'flex';

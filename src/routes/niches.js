@@ -39,7 +39,7 @@ r.get('/niches', async (req, res) => {
 });
 
 r.get('/niches/new', (req, res) => {
-  res.send(nicheForm(null));
+  res.send(nicheForm(null, req.user));
 });
 
 r.post('/niches/new', async (req, res) => {
@@ -54,7 +54,7 @@ r.get('/niches/:id/edit', async (req, res) => {
   const niches = await query('SELECT * FROM niches WHERE id = ? AND owner_id = ?', [req.params.id, req.user.id]);
   const niche = niches[0];
   if (!niche) return res.redirect('/niches');
-  res.send(nicheForm(niche));
+  res.send(nicheForm(niche, req.user));
 });
 
 r.post('/niches/:id/edit', async (req, res) => {
@@ -65,11 +65,12 @@ r.post('/niches/:id/edit', async (req, res) => {
   res.redirect('/niches');
 });
 
-function nicheForm(niche) {
+function nicheForm(niche, user = null) {
   const isEdit = !!niche;
   return layout(isEdit ? 'Edit Niche' : 'New Niche', `
     <div class="container" style="max-width:520px">
-      <h1 class="mt-4 mb-2">${isEdit ? 'Edit Niche' : 'New Niche'}</h1>
+      <div class="card mt-4" style="background:var(--surface);border-color:var(--border);padding:2rem">
+      <h1 class="mb-2">${isEdit ? 'Edit Niche' : 'New Niche'}</h1>
       <form method="POST">
         <div class="form-group">
           <label>Name</label>
@@ -96,7 +97,7 @@ function nicheForm(niche) {
           <div class="flex-gap mt-1" style="height:44px;align-items:center">
             ${COLORS.map(c => `
               <label style="cursor:pointer;display:flex;align-items:center;justify-content:center">
-                <input type="radio" name="color" value="${c}" ${(niche?.color || COLORS[0]) === c ? 'checked' : ''} style="display:none" onchange="document.querySelectorAll('.color-opt').forEach(x=>x.style.width=x.style.height='28px');this.nextElementSibling.style.width=this.nextElementSibling.style.height='36px'">
+                <input type="radio" name="color" value="${c}" ${(niche?.color || COLORS[0]) === c ? 'checked' : ''} style="display:none" onchange="document.querySelectorAll('.color-opt').forEach(x=>x.style.width=x.style.height='28px');this.nextElementSibling.style.width=this.nextElementSibling.style.height='36px';updateIconColor(this.value)">
                 <span class="color-opt" style="display:inline-flex;align-items:center;justify-content:center;width:${(niche?.color || COLORS[0]) === c ? '36px' : '28px'};height:${(niche?.color || COLORS[0]) === c ? '36px' : '28px'};border-radius:50%;background:${c};border:2px solid ${(niche?.color || COLORS[0]) === c ? '#fff' : 'transparent'};transition:all 0.15s;flex-shrink:0"></span>
               </label>
             `).join('')}
@@ -107,8 +108,8 @@ function nicheForm(niche) {
           <div class="flex-gap mt-1">
             ${ICONS.map(i => `
               <label style="cursor:pointer;font-size:1.4rem">
-                <input type="radio" name="icon" value="${i}" ${(niche?.icon || '✦') === i ? 'checked' : ''} style="display:none" onchange="document.querySelectorAll('.icon-opt').forEach(x=>x.style.borderColor='transparent');this.nextElementSibling.style.borderColor='var(--accent)'">
-                <span class="icon-opt" style="padding:4px 6px;border-radius:6px;border:1px solid ${(niche?.icon || '✦') === i ? 'var(--accent)' : 'transparent'};transition:border-color 0.15s">${i}</span>
+                <input type="radio" name="icon" value="${i}" ${(niche?.icon || '✦') === i ? 'checked' : ''} style="display:none" onchange="document.querySelectorAll('.icon-opt').forEach(x=>x.style.borderColor='transparent');this.nextElementSibling.style.borderColor='var(--logo-light)'">
+                <span class="icon-opt" style="padding:4px 6px;border-radius:6px;border:1px solid ${(niche?.icon || '✦') === i ? 'var(--logo-light)' : 'transparent'};transition:border-color 0.15s">${i}</span>
               </label>
             `).join('')}
           </div>
@@ -118,8 +119,19 @@ function nicheForm(niche) {
           <a href="/niches" class="btn btn-ghost">Cancel</a>
         </div>
       </form>
+      </div>
     </div>
-  `);
+    <script>
+      function updateIconColor(color) {
+        document.querySelectorAll('.icon-opt').forEach(function(el) {
+          el.style.color = color;
+        });
+      }
+      // Set initial color on load
+      var checked = document.querySelector('input[name="color"]:checked');
+      if (checked) updateIconColor(checked.value);
+    </script>
+  `, user);
 }
 
 export default r;
