@@ -13,6 +13,7 @@ export function layout(title, body, user = null) {
 <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
 <link rel="manifest" href="/assets/site.webmanifest">
 <meta name="theme-color" content="#0c0c0f">
+<script>if(localStorage.getItem('lumina-large-text')==='1')document.documentElement.classList.add('large-text-pending')</script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -327,6 +328,20 @@ label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; co
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* Large text mode */
+body.large-text { font-size: 1.1rem; }
+body.large-text p, body.large-text .muted, body.large-text .small { font-size: 1rem; }
+body.large-text .block-code code { font-size: 0.95rem; }
+body.large-text input, body.large-text textarea, body.large-text select { font-size: 1rem; }
+html.large-text-pending body { font-size: 1.1rem; }
+html.large-text-pending p,
+html.large-text-pending .muted,
+html.large-text-pending .small { font-size: 1rem; }
+html.large-text-pending .block-code code { font-size: 0.95rem; }
+html.large-text-pending input,
+html.large-text-pending textarea,
+html.large-text-pending select { font-size: 1rem; }
+
 /* Page transition overlay */
 #page-loader {
   display: none;
@@ -378,6 +393,12 @@ ${body}
 
 <script>
 (function() {
+  // Apply large text preference immediately
+  if (localStorage.getItem('lumina-large-text') === '1') {
+    document.body.classList.add('large-text');
+  }
+  document.documentElement.classList.remove('large-text-pending');
+
   // Service worker
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js');

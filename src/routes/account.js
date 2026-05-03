@@ -36,6 +36,19 @@ r.get('/account', async (req, res) => {
       </div>
 
       <div class="card mb-4" style="padding:1.5rem">
+        <div class="muted small mb-3" style="text-transform:uppercase;letter-spacing:0.06em">Display</div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="font-size:0.9rem">Large text</div>
+            <div class="muted small">Increase font size across the app</div>
+          </div>
+          <label class="toggle" style="margin:0">
+            <input type="checkbox" id="large-text-toggle">
+          </label>
+        </div>
+      </div>
+
+      <div class="card mb-4" style="padding:1.5rem">
         <div class="muted small mb-3" style="text-transform:uppercase;letter-spacing:0.06em">Your Content</div>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;text-align:center">
           <div>
@@ -57,6 +70,20 @@ r.get('/account', async (req, res) => {
         <button type="submit" class="btn btn-danger" style="width:100%;justify-content:center">Sign Out</button>
       </form>
     </div>
+
+    <script>
+      const toggle = document.getElementById('large-text-toggle');
+      toggle.checked = localStorage.getItem('lumina-large-text') === '1';
+      toggle.addEventListener('change', function() {
+        if (this.checked) {
+          localStorage.setItem('lumina-large-text', '1');
+          document.body.classList.add('large-text');
+        } else {
+          localStorage.removeItem('lumina-large-text');
+          document.body.classList.remove('large-text');
+        }
+      });
+    </script>
   `, req.user));
 });
 
