@@ -57,7 +57,7 @@ r.get('/graph', async (req, res) => {
 
       <div id="graph-container" style="flex:1;position:relative;overflow:hidden;background:var(--bg);z-index:1">
         <svg id="graph-svg" style="width:100%;height:100%"></svg>
-        <div id="tooltip" style="display:none;position:absolute;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:0.5rem 0.8rem;font-size:0.8rem;pointer-events:none;max-width:220px;z-index:10;box-shadow:0 4px 20px rgba(0,0,0,0.4)"></div>
+        <div id="tooltip" style="display:none;position:absolute;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:0.6rem 0.9rem;font-size:0.85rem;pointer-events:auto;max-width:240px;z-index:10;box-shadow:0 4px 20px rgba(0,0,0,0.4);cursor:pointer;transition:border-color 0.15s" id="tooltip"></div>
       </div>
     </div>
 
@@ -122,14 +122,14 @@ r.get('/graph', async (req, res) => {
         .attr('stroke-opacity', 0.55)
         .attr('marker-end', d => 'url(#arrow-' + d.type + ')');
 
-      // Nodes
+      // Nodes — grab, no click navigation
       const node = g.append('g').selectAll('g')
         .data(NODES).join('g')
         .attr('class', 'graph-node')
-        .style('cursor', 'pointer')
+        .style('cursor', 'grab')
         .call(d3.drag()
-          .on('start', (e, d) => { if (!e.active) sim.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
-          .on('drag',  (e, d) => { d.fx = e.x; d.fy = e.y; })
+          .on('start', (e, d) => { if (!e.active) sim.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; d._dragged = false; })
+          .on('drag',  (e, d) => { d.fx = e.x; d.fy = e.y; d._dragged = true; })
           .on('end',   (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = null; d.fy = null; })
         );
 
@@ -153,22 +153,56 @@ r.get('/graph', async (req, res) => {
         .attr('pointer-events', 'none')
         .text(d => d.title.length > 22 ? d.title.slice(0, 20) + '…' : d.title);
 
-      // Tooltip + click
-      node.on('mouseenter', (e, d) => {
+      // Tooltip — clickable info box, pointer-events:auto
+      let activeNode = null;
+
+      function showTooltip(e, d) {
+        activeNode = d;
+        tooltip.innerHTML =
+          \`<div style="font-weight:500;margin-bottom:0.3rem">\${d.title}</div>\` +
+          \`<div style="color:var(--muted);font-size:0.78rem;margin-bottom:0.6rem">\${d.niche_name}\${d.starred ? ' · ★' : ''}</div>\` +
+          \`<div style="font-size:0.78rem;color:var(--accent);text-decoration:underline">Open answer →</div>\`;
+        tooltip.style.borderColor = d.color;
         tooltip.style.display = 'block';
-        tooltip.innerHTML = \`<strong>\${d.title}</strong><br><span style="color:var(--muted)">\${d.niche_name}</span>\`;
-      }).on('mousemove', e => {
+        positionTooltip(e);
+      }
+
+      function positionTooltip(e) {
         const rect = container.getBoundingClientRect();
-        let x = e.clientX - rect.left + 14;
+        let x = e.clientX - rect.left + 16;
         let y = e.clientY - rect.top - 10;
-        if (x + 230 > width) x -= 244;
+        if (x + 260 > width) x = e.clientX - rect.left - 260;
+        if (y + 100 > height) y = e.clientY - rect.top - 100;
         tooltip.style.left = x + 'px';
         tooltip.style.top  = y + 'px';
-      }).on('mouseleave', () => {
-        tooltip.style.display = 'none';
+      }
+
+      node.on('mouseenter', (e, d) => {
+        if (!d._dragged) showTooltip(e, d);
+      }).on('mousemove', e => {
+        // only reposition if tooltip is from hover (not pinned)
+      }).on('mouseleave', (e, d) => {
+        // hide only if not clicked/pinned
+        if (activeNode !== d) return;
+        // small delay so user can move into tooltip
+        setTimeout(() => {
+          if (!tooltip.matches(':hover')) {
+            tooltip.style.display = 'none';
+            activeNode = null;
+          }
+        }, 120);
       }).on('click', (e, d) => {
-        if (e.defaultPrevented) return;
-        window.location.href = '/answer/' + d.id;
+        if (e.defaultPrevented || d._dragged) return;
+        showTooltip(e, d);
+      });
+
+      tooltip.addEventListener('mouseleave', () => {
+        tooltip.style.display = 'none';
+        activeNode = null;
+      });
+
+      tooltip.addEventListener('click', () => {
+        if (activeNode) window.location.href = '/answer/' + activeNode.id;
       });
 
       sim.on('tick', () => {
