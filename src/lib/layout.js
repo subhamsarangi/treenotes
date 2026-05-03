@@ -370,8 +370,40 @@ ${body}
   <button onclick="document.getElementById('lightbox').style.display='none'" style="position:absolute;top:1.2rem;right:1.4rem;background:none;border:none;color:#fff;font-size:1.8rem;cursor:pointer;line-height:1;opacity:0.7" aria-label="Close">✕</button>
 </div>
 
+<button id="pwa-install" aria-label="Install app" title="Install Lumina" style="display:none;position:fixed;bottom:1.5rem;right:1.5rem;z-index:300;width:52px;height:52px;border-radius:50%;border:none;background:var(--logo);color:#0c0c0f;font-size:1.4rem;cursor:pointer;box-shadow:0 4px 20px rgba(253,178,1,0.35);transition:transform 0.15s,box-shadow 0.15s;align-items:center;justify-content:center">⬇</button>
+
 <script>
 (function() {
+  // Service worker
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js');
+  }
+
+  // PWA install button
+  let deferredPrompt = null;
+  const installBtn = document.getElementById('pwa-install');
+  installBtn.addEventListener('mouseover', () => { installBtn.style.transform = 'scale(1.1)'; installBtn.style.boxShadow = '0 6px 28px rgba(253,178,1,0.5)'; });
+  installBtn.addEventListener('mouseout',  () => { installBtn.style.transform = 'scale(1)';   installBtn.style.boxShadow = '0 4px 20px rgba(253,178,1,0.35)'; });
+
+  window.addEventListener('beforeinstallprompt', function(e) {
+    e.preventDefault();
+    deferredPrompt = e;
+    installBtn.style.display = 'flex';
+  });
+
+  installBtn.addEventListener('click', async function() {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') installBtn.style.display = 'none';
+    deferredPrompt = null;
+  });
+
+  window.addEventListener('appinstalled', function() {
+    installBtn.style.display = 'none';
+    deferredPrompt = null;
+  });
+
   // Lightbox
   document.addEventListener('click', function(e) {
     const img = e.target.closest('.hero-banner');
