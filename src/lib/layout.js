@@ -248,6 +248,12 @@ label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; co
   transform: translateY(-2px);
 }
 
+.card[onclick]:hover {
+  border-color: var(--niche-color, var(--accent)) !important;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+  transform: translateY(-2px);
+}
+
 .mt-1 { margin-top: 0.5rem; }
 .mt-2 { margin-top: 1rem; }
 .mt-3 { margin-top: 1.5rem; }

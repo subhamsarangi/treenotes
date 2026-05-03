@@ -18,21 +18,18 @@ r.get('/niches', async (req, res) => {
       </div>
       <div class="grid-2 mt-3">
         ${niches.map(n => `
-          <div class="card" style="border-color:${n.color}40;padding:0;overflow:hidden">
-            ${n.image ? `<img src="${n.image}" alt="${n.name}" style="width:100%;height:120px;object-fit:cover">` : ''}
-
+          <div class="card" style="--niche-color:${n.color};border-color:${n.color}40;padding:0;overflow:hidden;cursor:pointer;transition:border-color 0.2s,box-shadow 0.2s,transform 0.15s" onclick="window.location='/niche/${n.id}'">
+            ${n.image ? `<img src="${n.image}" alt="${n.name}" style="width:100%;height:120px;object-fit:cover;pointer-events:none">` : ''}
             <div style="padding:1.2rem">
               <div class="flex-between">
-                <div style="font-size:2rem;color:${n.color}">${n.icon}</div>
-                <div class="flex-gap">
+                <div style="font-size:2rem;color:${n.color};pointer-events:none">${n.icon}</div>
+                <div class="flex-gap" onclick="event.stopPropagation()">
                   <a href="/niches/${n.id}/edit" class="btn btn-ghost small">Edit</a>
                 </div>
               </div>
-              <a href="/niche/${n.id}" style="text-decoration:none">
-                <div style="font-family:'Fraunces',serif;font-size:1.3rem;color:${n.color};margin-top:0.5rem">${n.name}</div>
-              </a>
-              <div class="muted small mt-1">${n.description || ''}</div>
-              <div class="muted small mt-1">${n.cnt} answers</div>
+              <div style="font-family:'Fraunces',serif;font-size:1.3rem;color:${n.color};margin-top:0.5rem;pointer-events:none">${n.name}</div>
+              <div class="muted small mt-1;pointer-events:none">${n.description || ''}</div>
+              <div class="muted small mt-1;pointer-events:none">${n.cnt} answers</div>
             </div>
           </div>
         `).join('') || '<div class="muted">No niches yet.</div>'}
