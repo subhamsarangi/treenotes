@@ -423,24 +423,44 @@ ${body}
   installBtn.addEventListener('mouseover', () => { installBtn.style.transform = 'scale(1.1)'; installBtn.style.boxShadow = '0 6px 28px rgba(253,178,1,0.5)'; });
   installBtn.addEventListener('mouseout',  () => { installBtn.style.transform = 'scale(1)';   installBtn.style.boxShadow = '0 4px 20px rgba(253,178,1,0.35)'; });
 
-  window.addEventListener('beforeinstallprompt', function(e) {
-    e.preventDefault();
-    deferredPrompt = e;
-    installBtn.style.display = 'flex';
-  });
+  // Already installed — never show button
+  const isInstalled = window.matchMedia('(display-mode: standalone)').matches
+    || window.navigator.standalone === true;
 
-  installBtn.addEventListener('click', async function() {
-    if (!deferredPrompt) return;
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === 'accepted') installBtn.style.display = 'none';
-    deferredPrompt = null;
-  });
+  if (!isInstalled) {
+    // Show button if prompt was captured on a previous page this session
+    if (sessionStorage.getItem('lumina-pwa-prompt') === '1') {
+      installBtn.style.display = 'flex';
+    }
 
-  window.addEventListener('appinstalled', function() {
-    installBtn.style.display = 'none';
-    deferredPrompt = null;
-  });
+    window.addEventListener('beforeinstallprompt', function(e) {
+      e.preventDefault();
+      deferredPrompt = e;
+      window._pwaPrompt = e;
+      sessionStorage.setItem('lumina-pwa-prompt', '1');
+      installBtn.style.display = 'flex';
+    });
+
+    installBtn.addEventListener('click', async function() {
+      // Re-use stored prompt from this session if current page didn't fire the event
+      const prompt = deferredPrompt || window._pwaPrompt;
+      if (!prompt) return;
+      prompt.prompt();
+      const { outcome } = await prompt.userChoice;
+      if (outcome === 'accepted') {
+        installBtn.style.display = 'none';
+        sessionStorage.removeItem('lumina-pwa-prompt');
+      }
+      deferredPrompt = null;
+      window._pwaPrompt = null;
+    });
+
+    window.addEventListener('appinstalled', function() {
+      installBtn.style.display = 'none';
+      sessionStorage.removeItem('lumina-pwa-prompt');
+      deferredPrompt = null;
+    });
+  }
 
   // Lightbox
   document.addEventListener('click', function(e) {

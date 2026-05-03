@@ -1,6 +1,8 @@
 {
   "name": "Lumina",
   "short_name": "Lumina",
+  "start_url": "/",
+  "scope": "/",
   "icons": [
     {
       "src": "/assets/android-chrome-192x192.png",
@@ -15,5 +17,7 @@
   ],
   "theme_color": "#0c0c0f",
   "background_color": "#0c0c0f",
-  "display": "standalone"
+  "display": "standalone",
+  "orientation": "any",
+  "description": "Your personal AI knowledge base"
 }

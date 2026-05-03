@@ -37,7 +37,7 @@ r.get('/account', async (req, res) => {
 
       <div class="card mb-4" style="padding:1.5rem">
         <div class="muted small mb-3" style="text-transform:uppercase;letter-spacing:0.06em">Display</div>
-        <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.2rem">
           <div>
             <div style="font-size:0.9rem">Large text</div>
             <div class="muted small">Increase font size across the app</div>
@@ -45,6 +45,14 @@ r.get('/account', async (req, res) => {
           <label class="toggle" style="margin:0">
             <input type="checkbox" id="large-text-toggle">
           </label>
+        </div>
+        <div style="border-top:1px solid var(--border);padding-top:1.2rem">
+          <div style="font-size:0.9rem;margin-bottom:0.3rem">Install app</div>
+          <div class="muted small" style="margin-bottom:0.8rem">Add Lumina to your home screen</div>
+          <button id="install-btn" class="btn" style="display:none">⬇ Install Lumina</button>
+          <div id="install-unsupported" class="muted small" style="display:none">
+            To install: use your browser's <strong>Add to Home Screen</strong> or <strong>Install app</strong> option in the address bar / share menu.
+          </div>
         </div>
       </div>
 
@@ -82,6 +90,43 @@ r.get('/account', async (req, res) => {
           localStorage.removeItem('lumina-large-text');
           document.body.classList.remove('large-text');
         }
+      });
+
+      // PWA install
+      const installBtn = document.getElementById('install-btn');
+      const installUnsupported = document.getElementById('install-unsupported');
+
+      // Check if already installed
+      const isInstalled = window.matchMedia('(display-mode: standalone)').matches
+        || window.navigator.standalone === true;
+
+      if (isInstalled) {
+        installUnsupported.textContent = '✓ Already installed';
+        installUnsupported.style.display = 'block';
+        installUnsupported.style.color = 'var(--accent2)';
+      } else if (window._pwaPrompt) {
+        // Prompt was captured before page load
+        installBtn.style.display = 'inline-flex';
+        installBtn.addEventListener('click', async () => {
+          window._pwaPrompt.prompt();
+          const { outcome } = await window._pwaPrompt.userChoice;
+          if (outcome === 'accepted') {
+            installBtn.textContent = '✓ Installed';
+            installBtn.disabled = true;
+          }
+          window._pwaPrompt = null;
+        });
+      } else {
+        // No prompt available — show manual instructions
+        installUnsupported.style.display = 'block';
+      }
+
+      // If prompt fires while on this page
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        window._pwaPrompt = e;
+        installUnsupported.style.display = 'none';
+        installBtn.style.display = 'inline-flex';
       });
     </script>
   `, req.user));
