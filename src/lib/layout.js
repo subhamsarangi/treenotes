@@ -242,6 +242,12 @@ label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; co
 @media (max-width: 640px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
 @media (max-width: 640px) { .niches-grid { grid-template-columns: repeat(2, 1fr) !important; } }
 
+.niche-card-link:hover .card {
+  border-color: var(--niche-color, var(--accent)) !important;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+  transform: translateY(-2px);
+}
+
 .mt-1 { margin-top: 0.5rem; }
 .mt-2 { margin-top: 1rem; }
 .mt-3 { margin-top: 1.5rem; }
@@ -361,6 +367,7 @@ html.large-text-pending select { font-size: 1rem; }
 </head>
 <body>
 <canvas id="grid-canvas" style="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0"></canvas>
+<div style="position:fixed;inset:0;pointer-events:none;z-index:0;background-image:linear-gradient(var(--accent) 1px,transparent 1px),linear-gradient(90deg,var(--accent) 1px,transparent 1px);background-size:40px 40px;opacity:0.08;-webkit-mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black 30%,transparent 100%);mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black 30%,transparent 100%)"></div>
 <div id="page-loader"></div>
 <nav>
   <a href="/" class="nav-logo" style="display:flex;align-items:center;gap:0.5rem"><img src="/assets/input_nobg.png" alt="Lumina" style="height:28px;width:auto;display:block">Lumina</a>
@@ -510,7 +517,7 @@ ${body}
     function lineAlpha(lx, ly, cx, cy) {
       const d = Math.sqrt((lx - cx) ** 2 + (ly - cy) ** 2);
       const t = Math.max(0, 1 - d / RADIUS);
-      const a = (t * t * 0.32).toFixed(3);
+      const a = (t * t * 0.55).toFixed(3);
       return \`rgba(253,178,1,\${a})\`;
     }
 

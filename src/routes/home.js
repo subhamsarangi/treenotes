@@ -178,8 +178,8 @@ r.get('/', async (req, res) => {
         ${niches.length ? `
           <div class="niches-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem">
             ${niches.map(n => `
-              <a href="/niche/${n.id}" style="text-decoration:none;display:flex">
-                <div class="card" style="border-color:${n.color}30;display:flex;flex-direction:column;width:100%">
+              <a href="/niche/${n.id}" style="text-decoration:none;display:flex;--niche-color:${n.color}" class="niche-card-link">
+                <div class="card" style="border-color:${n.color}30;display:flex;flex-direction:column;width:100%;transition:border-color 0.2s,box-shadow 0.2s,transform 0.15s">
                   <div style="font-size:2rem;margin-bottom:0.6rem;color:${n.color}">${n.icon}</div>
                   <div style="font-family:'Fraunces',serif;font-size:1.1rem;color:${n.color}">${n.name}</div>
                   <div class="muted small mt-1">${n.description || ''}</div>
