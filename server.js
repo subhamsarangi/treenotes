@@ -38,8 +38,10 @@ app.use(session({
 // Public routes
 app.use(authRouter);
 
+// Home handles its own auth (shows landing to guests, dashboard to users)
+app.use(homeRouter);
+
 // Protected routes
-app.use(requireAuth, homeRouter);
 app.use(requireAuth, nichesRouter);
 app.use(requireAuth, nichePageRouter);
 app.use(requireAuth, importRouter);

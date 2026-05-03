@@ -353,14 +353,17 @@ label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; co
     <span></span>
   </button>
   <div class="nav-links">
+    ${user ? `
     <a href="/">Home</a>
     <a href="/prompts">Prompts</a>
     <a href="/import">Import</a>
     <a href="/niches">Niches</a>
     <a href="/graph">Graph</a>
-    ${user ? `
     <a href="/account" style="color:var(--muted);font-size:0.85rem;letter-spacing:0.05em;text-transform:uppercase">${user.email}</a>
-    ` : ''}
+    ` : `
+    <a href="/login">Sign in</a>
+    <a href="/register" class="btn btn-primary" style="padding:0.4rem 1rem;font-size:0.82rem">Get started</a>
+    `}
   </div>
 </nav>
 ${body}
