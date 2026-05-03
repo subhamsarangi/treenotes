@@ -113,6 +113,9 @@ function landingPage() {
 
     <script>
     (function() {
+      var suppressed = false;
+      var suppressTimer = null;
+
       // Animate grid highlight from point A to B without moving real cursor
       function randPoint() {
         var margin = 80;
@@ -122,9 +125,14 @@ function landingPage() {
         };
       }
 
+      var animating = false;
+
       function animateTo(from, to, duration, onDone) {
         var start = null;
+        animating = true;
         function step(ts) {
+          // abort if user took over
+          if (suppressed) { animating = false; if (window._gridClear) window._gridClear(); return; }
           if (!start) start = ts;
           var p = Math.min((ts - start) / duration, 1);
           // ease in-out cubic
@@ -135,9 +143,10 @@ function landingPage() {
           if (p < 1) {
             requestAnimationFrame(step);
           } else {
+            animating = false;
             // linger briefly then fade out
             setTimeout(function() {
-              if (window._gridClear) window._gridClear();
+              if (!suppressed && window._gridClear) window._gridClear();
               if (onDone) onDone();
             }, 600);
           }
@@ -146,12 +155,22 @@ function landingPage() {
       }
 
       function runDemo() {
+        if (suppressed) return;
         var a = randPoint();
         var b = randPoint();
         // ensure A and B are reasonably far apart
         while (Math.hypot(b.x - a.x, b.y - a.y) < 300) b = randPoint();
         animateTo(a, b, 4000, null);
       }
+
+      // Suppress demo for 10s on real mouse movement
+      document.addEventListener('mousemove', function() {
+        suppressed = true;
+        clearTimeout(suppressTimer);
+        suppressTimer = setTimeout(function() {
+          suppressed = false;
+        }, 5000);
+      });
 
       // First run on load (slight delay so grid canvas is ready)
       setTimeout(runDemo, 400);
