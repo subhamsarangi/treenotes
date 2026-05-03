@@ -112,8 +112,8 @@ nav {
   .nav-links a:hover { background: var(--surface); }
 }
 
-.container { max-width: 1000px; margin: 0 auto; padding: 3rem 2rem; }
-.container-wide { max-width: 1300px; margin: 0 auto; padding: 3rem 2rem; }
+.container { max-width: 1000px; margin: 0 auto; padding: 3rem 2rem; position: relative; z-index: 1; }
+.container-wide { max-width: 1300px; margin: 0 auto; padding: 3rem 2rem; position: relative; z-index: 1; }
 
 h1 { font-family: 'Fraunces', serif; font-weight: 300; font-size: 2.4rem; letter-spacing: -0.03em; line-height: 1.2; }
 h2 { font-family: 'Fraunces', serif; font-weight: 300; font-size: 1.6rem; letter-spacing: -0.02em; }
@@ -148,6 +148,8 @@ h3 { font-size: 1rem; font-weight: 500; letter-spacing: 0.03em; text-transform: 
   border-radius: var(--r);
   padding: 1.5rem;
   transition: border-color 0.2s;
+  position: relative;
+  z-index: 1;
 }
 .card:hover { border-color: var(--accent); }
 
@@ -342,6 +344,7 @@ label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; co
 </style>
 </head>
 <body>
+<canvas id="grid-canvas" style="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0"></canvas>
 <div id="page-loader"></div>
 <nav>
   <a href="/" class="nav-logo" style="display:flex;align-items:center;gap:0.5rem"><img src="/assets/input_nobg.png" alt="Lumina" style="height:28px;width:auto;display:block">Lumina</a>
@@ -383,6 +386,95 @@ ${body}
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') document.getElementById('lightbox').style.display = 'none';
   });
+
+  // Grid + spotlight on canvas
+  (function() {
+    const canvas = document.getElementById('grid-canvas');
+    const ctx = canvas.getContext('2d');
+    const CELL = 40;
+    const RADIUS = 220;
+    const LERP = 0.08;
+    let tx = -9999, ty = -9999;
+    let cx = -9999, cy = -9999;
+    let raf;
+
+    function resize() {
+      canvas.width  = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+
+    function draw() {
+      cx += (tx - cx) * LERP;
+      cy += (ty - cy) * LERP;
+
+      const W = canvas.width, H = canvas.height;
+      ctx.clearRect(0, 0, W, H);
+
+      const buf = RADIUS + CELL;
+      const x0 = Math.max(0, Math.floor((cx - buf) / CELL) * CELL);
+      const x1 = Math.min(W, Math.ceil((cx + buf) / CELL) * CELL);
+      const y0 = Math.max(0, Math.floor((cy - buf) / CELL) * CELL);
+      const y1 = Math.min(H, Math.ceil((cy + buf) / CELL) * CELL);
+
+      // Vertical lines
+      for (let x = x0; x <= x1; x += CELL) {
+        if (Math.abs(x - cx) > buf) continue;
+        const grad = ctx.createLinearGradient(x, y0, x, y1);
+        grad.addColorStop(0,   'rgba(253,178,1,0)');
+        grad.addColorStop(0.5, lineAlpha(x, cy, cx, cy));
+        grad.addColorStop(1,   'rgba(253,178,1,0)');
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(x, y0);
+        ctx.lineTo(x, y1);
+        ctx.stroke();
+      }
+
+      // Horizontal lines
+      for (let y = y0; y <= y1; y += CELL) {
+        if (Math.abs(y - cy) > buf) continue;
+        const grad = ctx.createLinearGradient(x0, y, x1, y);
+        grad.addColorStop(0,   'rgba(253,178,1,0)');
+        grad.addColorStop(0.5, lineAlpha(cx, y, cx, cy));
+        grad.addColorStop(1,   'rgba(253,178,1,0)');
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(x0, y);
+        ctx.lineTo(x1, y);
+        ctx.stroke();
+      }
+
+      const stillMoving = Math.abs(tx - cx) > 0.5 || Math.abs(ty - cy) > 0.5;
+      raf = stillMoving ? requestAnimationFrame(draw) : null;
+    }
+
+    function lineAlpha(lx, ly, cx, cy) {
+      const d = Math.sqrt((lx - cx) ** 2 + (ly - cy) ** 2);
+      const t = Math.max(0, 1 - d / RADIUS);
+      const a = (t * t * 0.32).toFixed(3);
+      return \`rgba(253,178,1,\${a})\`;
+    }
+
+    function schedule() {
+      if (!raf) raf = requestAnimationFrame(draw);
+    }
+
+    document.addEventListener('mousemove', function(e) {
+      tx = e.clientX; ty = e.clientY;
+      schedule();
+    });
+
+    document.addEventListener('mouseleave', function() {
+      tx = -9999; ty = -9999;
+      schedule();
+    });
+
+    window.addEventListener('resize', function() { resize(); schedule(); });
+    resize();
+    draw();
+  })();
 
   // Nav toggle
   const toggle = document.querySelector('.nav-toggle');

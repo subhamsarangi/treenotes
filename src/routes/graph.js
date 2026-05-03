@@ -55,7 +55,7 @@ r.get('/graph', async (req, res) => {
         <span style="display:flex;align-items:center;gap:0.4rem"><svg width="28" height="28" style="flex-shrink:0"><circle cx="14" cy="14" r="13" fill="#c8b4fa22" stroke="#c8b4fa" stroke-width="2.5"/><text x="14" y="18" text-anchor="middle" font-size="11" fill="#f4a96a">★</text></svg>starred</span>
       </div>
 
-      <div id="graph-container" style="flex:1;position:relative;overflow:hidden">
+      <div id="graph-container" style="flex:1;position:relative;overflow:hidden;background:var(--bg);z-index:1">
         <svg id="graph-svg" style="width:100%;height:100%"></svg>
         <div id="tooltip" style="display:none;position:absolute;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:0.5rem 0.8rem;font-size:0.8rem;pointer-events:none;max-width:220px;z-index:10;box-shadow:0 4px 20px rgba(0,0,0,0.4)"></div>
       </div>
