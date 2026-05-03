@@ -15,6 +15,7 @@ import accountRouter from "./src/routes/account.js";
 import graphRouter from "./src/routes/graph.js";
 
 const app = express();
+app.use('/assets', express.static('assets'));
 app.use(express.urlencoded({ extended: true, limit: "2mb" }));
 app.use(express.json());
 

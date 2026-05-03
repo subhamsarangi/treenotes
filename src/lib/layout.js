@@ -7,6 +7,12 @@ export function layout(title, body, user = null) {
 <title>${title} — Lumina</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,600;1,300&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+<link rel="manifest" href="/assets/site.webmanifest">
+<meta name="theme-color" content="#0c0c0f">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -16,6 +22,7 @@ export function layout(title, body, user = null) {
   --surface2: #1a1a24;
   --border: #252535;
   --accent: #c8b4fa;
+  --logo: #fdb201;
   --accent2: #7ee8b4;
   --accent3: #f4a96a;
   --text: #e8e6f0;
@@ -53,14 +60,14 @@ nav {
   font-family: 'Fraunces', serif;
   font-size: 1.3rem;
   font-weight: 600;
-  color: var(--accent);
+  color: var(--logo);
   letter-spacing: -0.02em;
   text-decoration: none;
 }
 
 .nav-links { display: flex; gap: 1.5rem; margin-left: auto; align-items: center; }
 .nav-links a { color: var(--muted); font-size: 0.85rem; letter-spacing: 0.05em; text-transform: uppercase; }
-.nav-links a:hover { color: var(--text); text-decoration: none; }
+.nav-links a:hover { color: var(--logo); text-decoration: none; }
 
 .nav-toggle {
   display: none;
@@ -337,7 +344,7 @@ label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; co
 <body>
 <div id="page-loader"></div>
 <nav>
-  <a href="/" class="nav-logo">✦ Lumina</a>
+  <a href="/" class="nav-logo" style="display:flex;align-items:center;gap:0.5rem"><img src="/assets/input_nobg.png" alt="Lumina" style="height:28px;width:auto;display:block">Lumina</a>
   <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false">
     <span></span>
     <span></span>
