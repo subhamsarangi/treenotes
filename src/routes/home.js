@@ -134,16 +134,16 @@ r.get('/', async (req, res) => {
       ${starred.length ? `
         <section class="mt-4">
           <h3 class="mb-2">★ Starred</h3>
-          <div class="grid-3">
+          <div class="grid-3" style="align-items:stretch">
             ${starred.map(a => `
-              <a href="/answer/${a.id}" style="text-decoration:none">
-                <div class="card">
+              <a href="/answer/${a.id}" style="text-decoration:none;display:flex">
+                <div class="card" style="display:flex;flex-direction:column;width:100%">
                   <div class="flex-gap mb-1">
                     <span class="chip" style="border-color:${a.niche_color}40;color:${a.niche_color}">${a.niche_name || '—'}</span>
                     <span class="star small">★</span>
                   </div>
                   <div style="font-family:'Fraunces',serif;font-size:1.05rem;margin-bottom:0.3rem">${a.title}</div>
-                  <div class="muted small">${a.summary || ''}</div>
+                  <div class="muted small" style="margin-top:auto">${a.summary || ''}</div>
                 </div>
               </a>
             `).join('')}
@@ -176,14 +176,14 @@ r.get('/', async (req, res) => {
           <a href="/niches/new" class="btn">+ New Niche</a>
         </div>
         ${niches.length ? `
-          <div class="grid-3">
+          <div class="niches-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem">
             ${niches.map(n => `
-              <a href="/niche/${n.id}" style="text-decoration:none">
-                <div class="card" style="border-color:${n.color}30">
+              <a href="/niche/${n.id}" style="text-decoration:none;display:flex">
+                <div class="card" style="border-color:${n.color}30;display:flex;flex-direction:column;width:100%">
                   <div style="font-size:2rem;margin-bottom:0.6rem">${n.icon}</div>
                   <div style="font-family:'Fraunces',serif;font-size:1.1rem;color:${n.color}">${n.name}</div>
                   <div class="muted small mt-1">${n.description || ''}</div>
-                  <div class="muted small mt-1">${countMap[n.id] || 0} answers</div>
+                  <div class="muted small mt-1" style="margin-top:auto;padding-top:0.5rem">${countMap[n.id] || 0} answers</div>
                 </div>
               </a>
             `).join('')}

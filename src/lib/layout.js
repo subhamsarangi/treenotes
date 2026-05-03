@@ -239,6 +239,7 @@ label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; co
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
 @media (max-width: 640px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+@media (max-width: 640px) { .niches-grid { grid-template-columns: repeat(2, 1fr) !important; } }
 
 .mt-1 { margin-top: 0.5rem; }
 .mt-2 { margin-top: 1rem; }
@@ -359,7 +360,7 @@ label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; co
     <a href="/import">Import</a>
     <a href="/niches">Niches</a>
     <a href="/graph">Graph</a>
-    <a href="/account" style="color:var(--muted);font-size:0.85rem;letter-spacing:0.05em;text-transform:uppercase">${user.email}</a>
+    <a href="/account">Account</a>
     ` : `
     <a href="/login">Sign in</a>
     <a href="/register" class="btn btn-primary" style="padding:0.4rem 1rem;font-size:0.82rem">Get started</a>
