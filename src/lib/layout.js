@@ -58,9 +58,52 @@ nav {
   text-decoration: none;
 }
 
-.nav-links { display: flex; gap: 1.5rem; margin-left: auto; }
+.nav-links { display: flex; gap: 1.5rem; margin-left: auto; align-items: center; }
 .nav-links a { color: var(--muted); font-size: 0.85rem; letter-spacing: 0.05em; text-transform: uppercase; }
 .nav-links a:hover { color: var(--text); text-decoration: none; }
+
+.nav-toggle {
+  display: none;
+  flex-direction: column;
+  gap: 6px;
+  margin-left: auto;
+  cursor: pointer;
+  padding: 4px;
+  background: none;
+  border: none;
+}
+.nav-toggle span {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: var(--text);
+  border-radius: 2px;
+  transition: transform 0.2s, opacity 0.2s;
+}
+
+@media (max-width: 640px) {
+  .nav-toggle { display: flex; }
+
+  .nav-links {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    gap: 0;
+    margin-left: 0;
+    background: rgba(12,12,15,0.97);
+    border-bottom: 1px solid var(--border);
+    padding: 0.5rem 0;
+  }
+  .nav-links.open { display: flex; }
+  .nav-links a {
+    padding: 0.75rem 2rem;
+    font-size: 0.9rem;
+  }
+  .nav-links a:hover { background: var(--surface); }
+}
 
 .container { max-width: 1000px; margin: 0 auto; padding: 3rem 2rem; }
 .container-wide { max-width: 1300px; margin: 0 auto; padding: 3rem 2rem; }
@@ -274,6 +317,10 @@ label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; co
 <div id="page-loader"></div>
 <nav>
   <a href="/" class="nav-logo">✦ Lumina</a>
+  <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false">
+    <span></span>
+    <span></span>
+  </button>
   <div class="nav-links">
     <a href="/">Home</a>
     <a href="/prompts">Prompts</a>
@@ -287,6 +334,23 @@ label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; co
 ${body}
 <script>
 (function() {
+  // Nav toggle
+  const toggle = document.querySelector('.nav-toggle');
+  const navLinks = document.querySelector('.nav-links');
+  if (toggle && navLinks) {
+    toggle.addEventListener('click', function() {
+      const open = navLinks.classList.toggle('open');
+      toggle.setAttribute('aria-expanded', open);
+    });
+    // Close on link click
+    navLinks.querySelectorAll('a').forEach(function(a) {
+      a.addEventListener('click', function() {
+        navLinks.classList.remove('open');
+        toggle.setAttribute('aria-expanded', 'false');
+      });
+    });
+  }
+
   const loader = document.getElementById('page-loader');
 
   // Show loader on navigation links (not buttons, not hash, not external)
