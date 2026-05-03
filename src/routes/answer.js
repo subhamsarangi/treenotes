@@ -117,7 +117,7 @@ r.get('/answer/:id/pick-niche', async (req, res) => {
           <form method="POST" action="/answer/${a.id}/pick-niche">
             <input type="hidden" name="niche_id" value="${n.id}">
             <button type="submit" class="card" style="width:100%;text-align:left;cursor:pointer;border-color:${n.color}30;background:var(--surface)">
-              <div style="font-size:1.5rem">${n.icon}</div>
+              <div style="font-size:1.5rem;color:${n.color}">${n.icon}</div>
               <div style="font-family:'Fraunces',serif;color:${n.color};margin-top:0.4rem">${n.name}</div>
               ${n.description ? `<div class="muted small mt-1">${n.description}</div>` : ''}
             </button>

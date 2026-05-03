@@ -31,7 +31,7 @@ r.get('/niche/:id', async (req, res) => {
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:2rem;margin-top:1.5rem">
           <div>
             <div style="display:flex;align-items:center;gap:1rem;margin-bottom:0.8rem">
-              <span style="font-size:2.5rem">${niche.icon}</span>
+              <span style="font-size:2.5rem;color:${niche.color}">${niche.icon}</span>
               <h1 style="color:${niche.color};margin:0">${niche.name}</h1>
             </div>
             ${niche.description ? `<p class="muted" style="margin:0;max-width:500px">${niche.description}</p>` : ''}

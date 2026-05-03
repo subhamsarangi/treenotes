@@ -23,7 +23,7 @@ r.get('/niches', async (req, res) => {
 
             <div style="padding:1.2rem">
               <div class="flex-between">
-                <div style="font-size:2rem">${n.icon}</div>
+                <div style="font-size:2rem;color:${n.color}">${n.icon}</div>
                 <div class="flex-gap">
                   <a href="/niches/${n.id}/edit" class="btn btn-ghost small">Edit</a>
                 </div>
