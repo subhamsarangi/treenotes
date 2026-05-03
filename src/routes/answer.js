@@ -39,6 +39,7 @@ r.get('/answer/:id', async (req, res) => {
     : '';
 
   res.send(layout(a.title, `
+    ${a.image ? `<img src="${a.image}" alt="${a.title}" class="hero-banner">` : ''}
     <div class="container">
       ${fuzzyNotice}
       <div class="mt-4 mb-1">
@@ -194,8 +195,15 @@ r.get('/answer/:id/edit-meta', async (req, res) => {
         </div>
         <div class="form-group">
           <label>Image URL</label>
-          <input name="image" type="url" placeholder="https://..." value="${a.image || ''}">
-          ${a.image ? `<div class="mt-2"><img src="${a.image}" style="max-width:200px;border-radius:6px"></div>` : ''}
+          <input name="image" type="url" placeholder="https://..." value="${a.image || ''}" id="answer-image-input">
+          ${a.image ? `
+          <div class="mt-2" id="answer-image-preview">
+            <img src="${a.image}" style="max-width:200px;border-radius:6px;display:block;margin-bottom:0.5rem">
+            <label style="display:inline-flex;align-items:center;gap:0.5rem;cursor:pointer;text-transform:none;letter-spacing:0;font-size:0.85rem;color:var(--danger)">
+              <input type="checkbox" name="remove_image" value="1" style="width:auto;margin:0" onchange="if(this.checked){document.getElementById('answer-image-input').value='';document.getElementById('answer-image-input').disabled=true;}else{document.getElementById('answer-image-input').disabled=false;}">
+              Remove image
+            </label>
+          </div>` : ''}
         </div>
         <div class="form-group">
           <label>Created At</label>
@@ -211,9 +219,10 @@ r.get('/answer/:id/edit-meta', async (req, res) => {
 });
 
 r.post('/answer/:id/edit-meta', async (req, res) => {
-  const { title, niche_id, summary, created_at, image } = req.body;
+  const { title, niche_id, summary, created_at, image, remove_image } = req.body;
+  const finalImage = remove_image === '1' ? null : (image || null);
   await run('UPDATE answers SET title=?, niche_id=?, summary=?, created_at=?, image=? WHERE id=? AND owner_id=?',
-    [title, niche_id || null, summary || '', created_at, image || null, req.params.id, req.user.id]);
+    [title, niche_id || null, summary || '', created_at, finalImage, req.params.id, req.user.id]);
   res.redirect('/answer/' + req.params.id);
 });
 

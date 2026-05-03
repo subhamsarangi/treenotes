@@ -24,6 +24,7 @@ r.get('/niche/:id', async (req, res) => {
   const answers = await query(sql, params);
 
   res.send(layout(niche.name, `
+    ${niche.image ? `<img src="${niche.image}" alt="${niche.name}" class="hero-banner">` : ''}
     <div class="container">
       <div class="mt-4 mb-4">
         <a href="/" class="muted small">← Home</a>

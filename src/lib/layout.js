@@ -199,6 +199,27 @@ label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; co
 
 .page-content p { margin-bottom: 0.9rem; }
 
+.hero-banner {
+  width: 100%;
+  height: 320px;
+  object-fit: cover;
+  display: block;
+  cursor: zoom-in;
+}
+@media (max-width: 640px) {
+  .hero-banner { height: 200px; }
+}
+
+.img-skeleton {
+  background: linear-gradient(90deg, var(--surface) 25%, var(--surface2) 50%, var(--surface) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
 .dialog-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 200; align-items: center; justify-content: center; }
 .dialog-overlay.open { display: flex; }
 .dialog { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 2rem; max-width: 420px; width: 90%; }
@@ -332,8 +353,29 @@ label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; co
   </div>
 </nav>
 ${body}
+
+<div id="lightbox" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.88);backdrop-filter:blur(8px);align-items:center;justify-content:center;cursor:zoom-out" onclick="document.getElementById('lightbox').style.display='none'">
+  <img id="lightbox-img" src="" alt="" style="max-width:92vw;max-height:88vh;object-fit:contain;border-radius:var(--r);box-shadow:0 8px 60px rgba(0,0,0,0.6);user-select:none">
+  <button onclick="document.getElementById('lightbox').style.display='none'" style="position:absolute;top:1.2rem;right:1.4rem;background:none;border:none;color:#fff;font-size:1.8rem;cursor:pointer;line-height:1;opacity:0.7" aria-label="Close">✕</button>
+</div>
+
 <script>
 (function() {
+  // Lightbox
+  document.addEventListener('click', function(e) {
+    const img = e.target.closest('.hero-banner');
+    if (img) {
+      e.preventDefault();
+      const lb = document.getElementById('lightbox');
+      document.getElementById('lightbox-img').src = img.src;
+      document.getElementById('lightbox-img').alt = img.alt;
+      lb.style.display = 'flex';
+    }
+  });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') document.getElementById('lightbox').style.display = 'none';
+  });
+
   // Nav toggle
   const toggle = document.querySelector('.nav-toggle');
   const navLinks = document.querySelector('.nav-links');

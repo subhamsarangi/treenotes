@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "node --env-file=.env server.js"
+    "dev": "node --env-file=.env --watch server.js"
   },
   "dependencies": {
     "@libsql/client": "^0.17.3",

@@ -18,18 +18,22 @@ r.get('/niches', async (req, res) => {
       </div>
       <div class="grid-2 mt-3">
         ${niches.map(n => `
-          <div class="card" style="border-color:${n.color}40">
-            <div class="flex-between">
-              <div style="font-size:2rem">${n.icon}</div>
-              <div class="flex-gap">
-                <a href="/niches/${n.id}/edit" class="btn btn-ghost small">Edit</a>
+          <div class="card" style="border-color:${n.color}40;padding:0;overflow:hidden">
+            ${n.image ? `<img src="${n.image}" alt="${n.name}" style="width:100%;height:120px;object-fit:cover">` : ''}
+
+            <div style="padding:1.2rem">
+              <div class="flex-between">
+                <div style="font-size:2rem">${n.icon}</div>
+                <div class="flex-gap">
+                  <a href="/niches/${n.id}/edit" class="btn btn-ghost small">Edit</a>
+                </div>
               </div>
+              <a href="/niche/${n.id}" style="text-decoration:none">
+                <div style="font-family:'Fraunces',serif;font-size:1.3rem;color:${n.color};margin-top:0.5rem">${n.name}</div>
+              </a>
+              <div class="muted small mt-1">${n.description || ''}</div>
+              <div class="muted small mt-1">${n.cnt} answers</div>
             </div>
-            <a href="/niche/${n.id}" style="text-decoration:none">
-              <div style="font-family:'Fraunces',serif;font-size:1.3rem;color:${n.color};margin-top:0.5rem">${n.name}</div>
-            </a>
-            <div class="muted small mt-1">${n.description || ''}</div>
-            <div class="muted small mt-1">${n.cnt} answers</div>
           </div>
         `).join('') || '<div class="muted">No niches yet.</div>'}
       </div>
@@ -57,9 +61,10 @@ r.get('/niches/:id/edit', async (req, res) => {
 });
 
 r.post('/niches/:id/edit', async (req, res) => {
-  const { name, description, color, icon, image } = req.body;
+  const { name, description, color, icon, image, remove_image } = req.body;
+  const finalImage = remove_image === '1' ? null : (image || null);
   await run('UPDATE niches SET name=?, description=?, color=?, icon=?, image=? WHERE id=? AND owner_id=?',
-    [name, description || '', color, icon, image || null, req.params.id, req.user.id]);
+    [name, description || '', color, icon, finalImage, req.params.id, req.user.id]);
   res.redirect('/niches');
 });
 
@@ -79,8 +84,15 @@ function nicheForm(niche) {
         </div>
         <div class="form-group">
           <label>Image URL</label>
-          <input name="image" type="url" placeholder="https://..." value="${niche?.image || ''}">
-          ${niche?.image ? `<div class="mt-2"><img src="${niche.image}" style="max-width:200px;border-radius:6px"></div>` : ''}
+          <input name="image" type="url" placeholder="https://..." value="${niche?.image || ''}" id="niche-image-input">
+          ${niche?.image ? `
+          <div class="mt-2" id="niche-image-preview">
+            <img src="${niche.image}" style="max-width:200px;border-radius:6px;display:block;margin-bottom:0.5rem">
+            <label style="display:inline-flex;align-items:center;gap:0.5rem;cursor:pointer;text-transform:none;letter-spacing:0;font-size:0.85rem;color:var(--danger)">
+              <input type="checkbox" name="remove_image" value="1" style="width:auto;margin:0" onchange="if(this.checked){document.getElementById('niche-image-input').value='';document.getElementById('niche-image-input').disabled=true;}else{document.getElementById('niche-image-input').disabled=false;}">
+              Remove image
+            </label>
+          </div>` : ''}
         </div>
         <div class="form-group">
           <label>Color</label>
