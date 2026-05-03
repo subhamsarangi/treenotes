@@ -232,14 +232,20 @@ r.get('/answer/:id/edit-content', async (req, res) => {
   if (!a) return res.redirect('/');
   const prettifiedContent = JSON.stringify(JSON.parse(a.content), null, 2);
   res.send(layout('Edit Content', `
-    <div class="container" style="max-width:680px">
+    <div class="container" style="max-width:960px">
       <a href="/answer/${a.id}" class="muted small mt-4" style="display:block">← Back</a>
       <h1 class="mt-2 mb-3">Edit Content</h1>
       <p class="muted small mb-2">Edit the JSON block array directly.</p>
       <div id="error-box" class="card mb-2" style="display:none;border-color:var(--danger);color:var(--danger)"></div>
       <form id="content-form" method="POST">
         <div class="form-group">
-          <div id="cm-editor" style="border:1px solid var(--border);border-radius:var(--r);overflow:hidden;min-height:400px;font-size:0.8rem"></div>
+          <div id="cm-spinner" style="border:1px solid var(--border);border-radius:var(--r);min-height:72vh;display:flex;align-items:center;justify-content:center;background:var(--surface)">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:1rem;color:var(--muted)">
+              <div style="width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite"></div>
+              <span class="small">Loading editor…</span>
+            </div>
+          </div>
+          <div id="cm-editor" style="border:1px solid var(--border);border-radius:var(--r);overflow:hidden;font-size:0.85rem;display:none"></div>
           <textarea name="content" id="content-input" style="display:none">${escAttr(prettifiedContent)}</textarea>
         </div>
         <div class="flex-gap">
@@ -260,6 +266,8 @@ r.get('/answer/:id/edit-content', async (req, res) => {
 
       const initialContent = document.getElementById('content-input').value;
 
+      const editorHeight = window.innerWidth < 640 ? '60vh' : '72vh';
+
       const view = new EditorView({
         state: EditorState.create({
           doc: initialContent,
@@ -272,9 +280,10 @@ r.get('/answer/:id/edit-content', async (req, res) => {
             json(),
             oneDark,
             keymap.of([...defaultKeymap, ...historyKeymap, ...closeBracketsKeymap]),
+            EditorView.lineWrapping,
             EditorView.theme({
-              '&': { background: 'var(--surface)', height: '400px' },
-              '.cm-scroller': { fontFamily: "'DM Mono', monospace", fontSize: '0.8rem', overflow: 'auto' },
+              '&': { background: 'var(--surface)', height: editorHeight },
+              '.cm-scroller': { fontFamily: "'DM Mono', monospace", fontSize: '0.85rem', overflow: 'auto' },
               '.cm-content': { padding: '0.8rem 0' },
               '.cm-gutters': { background: 'var(--surface2)', border: 'none', borderRight: '1px solid var(--border)' },
               '.cm-activeLineGutter': { background: 'var(--surface)' },
@@ -283,6 +292,10 @@ r.get('/answer/:id/edit-content', async (req, res) => {
         }),
         parent: document.getElementById('cm-editor'),
       });
+
+      // Hide spinner, show editor
+      document.getElementById('cm-spinner').style.display = 'none';
+      document.getElementById('cm-editor').style.display = 'block';
 
       window.validate = function() {
         try {
