@@ -7,11 +7,11 @@ export function layout(title, body, user = null) {
 <title>${title} — Lumina</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,600;1,300&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
-<link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png">
-<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
-<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
-<link rel="manifest" href="/assets/site.webmanifest">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
 <meta name="theme-color" content="#0c0c0f">
 <script>if(localStorage.getItem('lumina-large-text')==='1')document.documentElement.classList.add('large-text-pending')</script>
 <style>
@@ -376,7 +376,7 @@ html.large-text-pending select { font-size: 1rem; }
 <div style="position:fixed;inset:0;pointer-events:none;z-index:0;background-image:linear-gradient(var(--accent) 1px,transparent 1px),linear-gradient(90deg,var(--accent) 1px,transparent 1px);background-size:40px 40px;opacity:0.08;-webkit-mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black 30%,transparent 100%);mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black 30%,transparent 100%)"></div>
 <div id="page-loader"></div>
 <nav>
-  <a href="/" class="nav-logo" style="display:flex;align-items:center;gap:0.5rem"><img src="/assets/input_nobg.png" alt="Lumina" style="height:28px;width:auto;display:block">Lumina</a>
+  <a href="/" class="nav-logo" style="display:flex;align-items:center;gap:0.5rem"><img src="/input_nobg.png" alt="Lumina" style="height:28px;width:auto;display:block">Lumina</a>
   <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false">
     <span></span>
     <span></span>

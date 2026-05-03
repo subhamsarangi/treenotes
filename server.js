@@ -15,8 +15,7 @@ import accountRouter from "./src/routes/account.js";
 import graphRouter from "./src/routes/graph.js";
 
 const app = express();
-app.use('/assets', express.static('assets'));
-app.get('/sw.js', (req, res) => res.sendFile('assets/sw.js', { root: '.' }));
+app.use(express.static('public'));
 app.use(express.urlencoded({ extended: true, limit: "2mb" }));
 app.use(express.json());
 
