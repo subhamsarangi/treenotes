@@ -8,7 +8,7 @@ const r = Router();
 r.get('/answer/:id', async (req, res) => {
   const rows = await query('SELECT a.*, n.name as niche_name, n.color as niche_color, n.id as niche_id FROM answers a LEFT JOIN niches n ON a.niche_id = n.id WHERE a.id = ? AND a.owner_id = ?', [req.params.id, req.user.id]);
   const a = rows[0];
-  if (!a) return res.redirect('/');
+  if (!a) return res.redirect('/dashboard');
 
   const links = await query(`
     SELECT al.relation_type, al.id as link_id,
@@ -45,7 +45,7 @@ r.get('/answer/:id', async (req, res) => {
       <div class="mt-4 mb-1">
         ${a.niche_id ? `<a href="/niche/${a.niche_id}" class="chip" style="border-color:${a.niche_color}40;color:${a.niche_color}">${a.niche_name}</a>` : ''}
       </div>
-      <h1 style="margin-top:0.6rem">${a.starred ? '<span class="star">★ </span>' : ''}${a.title}</h1>
+      <h1 style="margin-top:0.6rem;color:var(--logo-light)">${a.starred ? '<span class="star">★ </span>' : ''}${a.title}</h1>
       ${a.summary ? `<p class="muted mt-1">${a.summary}</p>` : ''}
       <div class="muted small mt-1">${a.created_at}</div>
 
@@ -102,7 +102,7 @@ r.get('/answer/:id', async (req, res) => {
 r.get('/answer/:id/pick-niche', async (req, res) => {
   const rows = await query('SELECT * FROM answers WHERE id = ? AND owner_id = ?', [req.params.id, req.user.id]);
   const a = rows[0];
-  if (!a) return res.redirect('/');
+  if (!a) return res.redirect('/dashboard');
   const niches = await query('SELECT * FROM niches WHERE owner_id = ?', [req.user.id]);
   const unmatched = req.query.unmatched || '';
 
@@ -137,7 +137,7 @@ r.post('/answer/:id/pick-niche', async (req, res) => {
 r.post('/answer/:id/star', async (req, res) => {
   const rows = await query('SELECT starred FROM answers WHERE id = ? AND owner_id = ?', [req.params.id, req.user.id]);
   const a = rows[0];
-  if (!a) return res.redirect('/');
+  if (!a) return res.redirect('/dashboard');
   await run('UPDATE answers SET starred = ? WHERE id = ? AND owner_id = ?', [a.starred ? 0 : 1, req.params.id, req.user.id]);
   res.redirect('/answer/' + req.params.id);
 });
@@ -146,7 +146,7 @@ r.post('/answer/:id/delete', async (req, res) => {
   const id = req.params.id;
   // Verify ownership first
   const owned = await query('SELECT id FROM answers WHERE id = ? AND owner_id = ?', [id, req.user.id]);
-  if (!owned.length) return res.redirect('/');
+  if (!owned.length) return res.redirect('/dashboard');
 
   const children = await query('SELECT from_id FROM answer_links WHERE to_id = ? AND relation_type = ?', [id, 'parent']);
   if (children.length) {
@@ -160,7 +160,7 @@ r.post('/answer/:id/delete', async (req, res) => {
   }
   await run('DELETE FROM answer_links WHERE from_id = ? OR to_id = ?', [id, id]);
   await run('DELETE FROM answers WHERE id = ?', [id]);
-  res.redirect('/');
+  res.redirect('/dashboard');
 });
 
 r.post('/answer/:id/unlink/:linkId', async (req, res) => {
@@ -171,7 +171,7 @@ r.post('/answer/:id/unlink/:linkId', async (req, res) => {
 r.get('/answer/:id/edit-meta', async (req, res) => {
   const rows = await query('SELECT * FROM answers WHERE id = ? AND owner_id = ?', [req.params.id, req.user.id]);
   const a = rows[0];
-  if (!a) return res.redirect('/');
+  if (!a) return res.redirect('/dashboard');
   const niches = await query('SELECT * FROM niches WHERE owner_id = ?', [req.user.id]);
   res.send(layout('Edit Metadata', `
     <div class="container" style="max-width:560px">
@@ -229,7 +229,7 @@ r.post('/answer/:id/edit-meta', async (req, res) => {
 r.get('/answer/:id/edit-content', async (req, res) => {
   const rows = await query('SELECT * FROM answers WHERE id = ? AND owner_id = ?', [req.params.id, req.user.id]);
   const a = rows[0];
-  if (!a) return res.redirect('/');
+  if (!a) return res.redirect('/dashboard');
   const prettifiedContent = JSON.stringify(JSON.parse(a.content), null, 2);
   res.send(layout('Edit Content', `
     <div class="container" style="max-width:960px">

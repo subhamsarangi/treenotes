@@ -103,12 +103,12 @@ function authForm({ mode = 'login', error = '', email = '' } = {}) {
 }
 
 r.get('/login', (req, res) => {
-  if (req.session.userId) return res.redirect('/');
+  if (req.session.userId) return res.redirect('/dashboard');
   res.send(authForm({ mode: 'login' }));
 });
 
 r.get('/register', (req, res) => {
-  if (req.session.userId) return res.redirect('/');
+  if (req.session.userId) return res.redirect('/dashboard');
   res.send(authForm({ mode: 'register' }));
 });
 
@@ -135,7 +135,7 @@ r.post('/register', async (req, res) => {
   req.session.email = email.toLowerCase();
   req.session.save((err) => {
     if (err) console.error('Session save error:', err);
-    res.redirect('/');
+    res.redirect('/dashboard');
   });
 });
 
@@ -162,7 +162,7 @@ r.post('/login', async (req, res) => {
   req.session.email = user.email;
   req.session.save((err) => {
     if (err) console.error('Session save error:', err);
-    res.redirect('/');
+    res.redirect('/dashboard');
   });
 });
 

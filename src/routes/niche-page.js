@@ -7,7 +7,7 @@ const r = Router();
 r.get('/niche/:id', async (req, res) => {
   const niches = await query('SELECT * FROM niches WHERE id = ? AND owner_id = ?', [req.params.id, req.user.id]);
   const niche = niches[0];
-  if (!niche) return res.redirect('/');
+  if (!niche) return res.redirect('/dashboard');
 
   const { search = '', sort = 'created_at', order = 'desc', starred } = req.query;
 
@@ -27,7 +27,7 @@ r.get('/niche/:id', async (req, res) => {
     ${niche.image ? `<img src="${niche.image}" alt="${niche.name}" class="hero-banner">` : ''}
     <div class="container">
       <div class="mt-4 mb-4">
-        <a href="/" class="muted small">← Home</a>
+        <a href="/dashboard" class="muted small">← Dashboard</a>
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:2rem;margin-top:1.5rem">
           <div>
             <div style="display:flex;align-items:center;gap:1rem;margin-bottom:0.8rem">
@@ -79,7 +79,7 @@ r.get('/niche/:id', async (req, res) => {
             <a href="/answer/${a.id}" style="text-decoration:none">
               <div class="card" style="display:flex;justify-content:space-between;align-items:center;padding:1.2rem;cursor:pointer">
                 <div style="flex:1">
-                  <div style="font-family:'Fraunces',serif;font-size:1.1rem;font-weight:400;margin-bottom:0.4rem">${a.starred ? '<span class="star">★ </span>' : ''}${a.title}</div>
+                  <div style="font-family:'Fraunces',serif;font-size:1.1rem;font-weight:400;margin-bottom:0.4rem;color:var(--logo-light)">${a.starred ? '<span class="star">★ </span>' : ''}${a.title}</div>
                   ${a.summary ? `<div class="muted small">${a.summary}</div>` : ''}
                 </div>
                 <div class="muted small" style="white-space:nowrap;margin-left:2rem;text-align:right">${a.created_at}</div>

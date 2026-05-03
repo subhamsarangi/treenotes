@@ -44,7 +44,7 @@ r.get('/graph', async (req, res) => {
         <div class="flex-gap">
           <input id="graph-search" placeholder="Search answers…" style="width:200px;padding:0.4rem 0.7rem;font-size:0.82rem">
           <button class="btn btn-ghost small" onclick="resetZoom()">Reset zoom</button>
-          <a href="/" class="btn btn-ghost small">← Home</a>
+          <a href="/dashboard" class="btn btn-ghost small">← Dashboard</a>
         </div>
       </div>
 

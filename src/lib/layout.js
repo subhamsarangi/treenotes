@@ -12,18 +12,19 @@ export function layout(title, body, user = null) {
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 <link rel="manifest" href="/site.webmanifest">
-<meta name="theme-color" content="#0c0c0f">
+<meta name="theme-color" content="#0f0d0a">
 <script>if(localStorage.getItem('lumina-large-text')==='1')document.documentElement.classList.add('large-text-pending')</script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg: #0c0c0f;
-  --surface: #13131a;
-  --surface2: #1a1a24;
-  --border: #252535;
+  --bg: #0f0d0a;
+  --surface: #1a1510;
+  --surface2: #221c12;
+  --border: #2e2518;
   --accent: #c8b4fa;
   --logo: #fdb201;
+  --logo-light: #fde68a;
   --accent2: #7ee8b4;
   --accent3: #f4a96a;
   --text: #e8e6f0;
@@ -52,7 +53,7 @@ nav {
   border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
-  background: rgba(12,12,15,0.92);
+  background: rgba(15,13,10,0.92);
   backdrop-filter: blur(12px);
   z-index: 100;
 }
@@ -101,7 +102,7 @@ nav {
     flex-direction: column;
     gap: 0;
     margin-left: 0;
-    background: rgba(12,12,15,0.97);
+    background: rgba(15,13,10,0.97);
     border-bottom: 1px solid var(--border);
     padding: 0.5rem 0;
   }
@@ -136,8 +137,8 @@ h3 { font-size: 1rem; font-weight: 500; letter-spacing: 0.03em; text-transform: 
   text-decoration: none;
 }
 .btn:hover { background: var(--surface2); border-color: var(--accent); color: var(--text); text-decoration: none; }
-.btn-primary { background: var(--accent); color: #0c0c0f; border-color: var(--accent); font-weight: 500; }
-.btn-primary:hover { opacity: 0.88; color: #fff; }
+.btn-primary { background: var(--logo); color: #0c0c0f; border-color: var(--logo); font-weight: 500; }
+.btn-primary:hover { background: var(--logo); border-color: var(--logo); opacity: 0.88; color: #0c0c0f; }
 .btn-danger { border-color: var(--danger); color: var(--danger); }
 .btn-danger:hover { background: var(--danger); color: #fff; }
 .btn-ghost { background: transparent; border-color: transparent; color: var(--muted); }
@@ -383,7 +384,7 @@ html.large-text-pending select { font-size: 1rem; }
   </button>
   <div class="nav-links">
     ${user ? `
-    <a href="/">Home</a>
+    <a href="/dashboard">Dashboard</a>
     <a href="/prompts">Prompts</a>
     <a href="/import">Import</a>
     <a href="/niches">Niches</a>
@@ -391,13 +392,13 @@ html.large-text-pending select { font-size: 1rem; }
     <a href="/account">Account</a>
     ` : `
     <a href="/login">Sign in</a>
-    <a href="/register" class="btn btn-primary" style="padding:0.4rem 1rem;font-size:0.82rem">Get started</a>
+    <a href="/register" class="btn btn-primary" style="padding:0.4rem 1rem;font-size:0.82rem;font-weight:700">Get started</a>
     `}
   </div>
 </nav>
 ${body}
 
-<div id="lightbox" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.88);backdrop-filter:blur(8px);align-items:center;justify-content:center;cursor:zoom-out" onclick="document.getElementById('lightbox').style.display='none'">
+<div id="lightbox" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(15,13,10,0.88);backdrop-filter:blur(8px);align-items:center;justify-content:center;cursor:zoom-out" onclick="document.getElementById('lightbox').style.display='none'">
   <img id="lightbox-img" src="" alt="" style="max-width:92vw;max-height:88vh;object-fit:contain;border-radius:var(--r);box-shadow:0 8px 60px rgba(0,0,0,0.6);user-select:none">
   <button onclick="document.getElementById('lightbox').style.display='none'" style="position:absolute;top:1.2rem;right:1.4rem;background:none;border:none;color:#fff;font-size:1.8rem;cursor:pointer;line-height:1;opacity:0.7" aria-label="Close">✕</button>
 </div>

@@ -29,7 +29,7 @@ function matchNiche(niches, value) {
 r.get('/import', async (req, res) => {
   const niches = await query('SELECT * FROM niches WHERE owner_id = ?', [req.user.id]);
   res.send(layout('Import Answer', `
-    <div class="container" style="max-width:680px">
+    <div class="container" style="max-width:960px">
       <h1 class="mt-4 mb-1">Import Answer</h1>
       <p class="muted mb-3">Paste a structured JSON object. The <code>id</code> field is ignored — the system generates it.</p>
 
@@ -41,7 +41,13 @@ r.get('/import', async (req, res) => {
 
       <div class="form-group">
         <label>JSON</label>
-        <div id="cm-editor" style="border:1px solid var(--border);border-radius:var(--r);overflow:hidden;min-height:300px;font-size:0.8rem"></div>
+        <div id="cm-spinner" style="border:1px solid var(--border);border-radius:var(--r);min-height:60vh;display:flex;align-items:center;justify-content:center;background:var(--surface)">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:1rem;color:var(--muted)">
+            <div style="width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--logo);border-radius:50%;animation:spin 0.7s linear infinite"></div>
+            <span class="small">Loading editor…</span>
+          </div>
+        </div>
+        <div id="cm-editor" style="border:1px solid var(--border);border-radius:var(--r);overflow:hidden;font-size:0.8rem;display:none"></div>
         <textarea id="json-input" name="json-input" style="display:none" placeholder='{"title":"...","niche":"machine-learning","summary":"...","content":[]}'></textarea>
       </div>
 
@@ -82,7 +88,7 @@ r.get('/import', async (req, res) => {
             oneDark,
             keymap.of([...defaultKeymap, ...historyKeymap, ...closeBracketsKeymap]),
             EditorView.theme({
-              '&': { background: 'var(--surface)', height: '300px' },
+              '&': { background: 'var(--surface)', height: '60vh' },
               '.cm-scroller': { fontFamily: "'DM Mono', monospace", fontSize: '0.8rem', overflow: 'auto' },
               '.cm-content': { padding: '0.8rem 0' },
               '.cm-gutters': { background: 'var(--surface2)', border: 'none', borderRight: '1px solid var(--border)' },
@@ -92,6 +98,10 @@ r.get('/import', async (req, res) => {
         }),
         parent: document.getElementById('cm-editor'),
       });
+
+      // Hide spinner, show editor
+      document.getElementById('cm-spinner').style.display = 'none';
+      document.getElementById('cm-editor').style.display = 'block';
 
       function getJson() {
         const val = view.state.doc.toString();

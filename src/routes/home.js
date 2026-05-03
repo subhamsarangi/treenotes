@@ -4,7 +4,7 @@ import { layout } from '../lib/layout.js';
 
 const r = Router();
 
-function landingPage() {
+function landingPage(user = null) {
   return layout('Lumina — Your Personal Knowledge Base', `
     <!-- Hero -->
     <div style="position:relative;overflow:hidden">
@@ -13,14 +13,16 @@ function landingPage() {
           ✦ Personal Knowledge Base
         </div>
         <h1 style="font-size:clamp(2.4rem,6vw,4rem);line-height:1.1;margin-bottom:1.5rem;letter-spacing:-0.04em">
-          Your AI answers,<br><em style="font-style:italic;color:var(--accent)">organized forever</em>
+          Your AI answers,<br><em style="font-style:italic;color:var(--logo-light)">organized forever</em>
         </h1>
         <p style="font-size:1.1rem;color:var(--muted);max-width:520px;margin:0 auto 2.5rem;line-height:1.8">
           Stop losing great AI responses in chat history. Lumina lets you store, link, and explore your knowledge — structured, searchable, yours.
         </p>
         <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
-          <a href="/register" class="btn btn-primary" style="padding:0.75rem 2rem;font-size:1rem">Get started free</a>
-          <a href="/login" class="btn" style="padding:0.75rem 2rem;font-size:1rem">Sign in</a>
+          ${user
+            ? `<a href="/dashboard" class="btn btn-primary" style="padding:0.75rem 2rem;font-size:1rem">Go to Dashboard</a>`
+            : `<a href="/register" class="btn btn-primary" style="padding:0.75rem 2rem;font-size:1rem">Get started free</a>
+          <a href="/login" class="btn" style="padding:0.75rem 2rem;font-size:1rem">Sign in</a>`}
         </div>
       </div>
     </div>
@@ -47,7 +49,7 @@ function landingPage() {
           <p class="muted small" style="line-height:1.8">See all your knowledge as an interactive D3 graph. Spot clusters, gaps, and connections at a glance.</p>
         </div>
 
-        <div class="card" style="border-color:var(--logo)20;padding:2rem">
+        <div class="card" style="border-color:var(--logo-light)20;padding:2rem">
           <div style="font-size:2rem;margin-bottom:1rem">⚡</div>
           <h2 style="font-size:1.1rem;font-family:'Outfit',sans-serif;font-weight:500;text-transform:none;letter-spacing:0;color:var(--text);margin-bottom:0.6rem">Import via Prompts</h2>
           <p class="muted small" style="line-height:1.8">Use built-in prompt templates with any AI. Paste the structured JSON response and it imports instantly — title, summary, content blocks and all.</p>
@@ -96,12 +98,14 @@ function landingPage() {
 
       <!-- CTA -->
       <div class="card" style="text-align:center;padding:3.5rem 2rem;border-color:var(--accent)20;background:linear-gradient(135deg,var(--surface) 0%,var(--surface2) 100%)">
-        <div style="font-size:2.5rem;margin-bottom:1rem">✦</div>
+        <div style="font-size:2.5rem;margin-bottom:1rem"><img src="/input_nobg.png" alt="Lumina" style="height:56px;width:auto"></div>
         <h2 style="font-size:clamp(1.4rem,3vw,2rem);margin-bottom:0.8rem;letter-spacing:-0.02em">Ready to build your knowledge base?</h2>
         <p class="muted small" style="margin-bottom:2rem;max-width:400px;margin-left:auto;margin-right:auto;line-height:1.8">Free to use. No credit card. Just you and your knowledge.</p>
         <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
-          <a href="/register" class="btn btn-primary" style="padding:0.75rem 2rem;font-size:1rem">Create free account</a>
-          <a href="/login" class="btn" style="padding:0.75rem 2rem;font-size:1rem">Sign in</a>
+          ${user
+            ? `<a href="/dashboard" class="btn btn-primary" style="padding:0.75rem 2rem;font-size:1rem">Go to Dashboard</a>`
+            : `<a href="/register" class="btn btn-primary" style="padding:0.75rem 2rem;font-size:1rem">Create free account</a>
+          <a href="/login" class="btn" style="padding:0.75rem 2rem;font-size:1rem">Sign in</a>`}
         </div>
       </div>
 
@@ -179,13 +183,19 @@ function landingPage() {
       setInterval(runDemo, 8000);
     })();
     </script>
-  `);
+  `, user);
 }
 
-r.get('/', async (req, res) => {
-  // Show landing page to unauthenticated visitors
+r.get('/', (req, res) => {
+  const user = req.session && req.session.userId
+    ? { id: req.session.userId, email: req.session.email }
+    : null;
+  res.send(landingPage(user));
+});
+
+r.get('/dashboard', async (req, res) => {
   if (!req.session || !req.session.userId) {
-    return res.send(landingPage());
+    return res.redirect('/login');
   }
 
   const uid = req.session.userId;
@@ -211,7 +221,7 @@ r.get('/', async (req, res) => {
                     <span class="chip" style="border-color:${a.niche_color}40;color:${a.niche_color}">${a.niche_name || '—'}</span>
                     <span class="star small">★</span>
                   </div>
-                  <div style="font-family:'Fraunces',serif;font-size:1.05rem;margin-bottom:0.3rem">${a.title}</div>
+                  <div style="font-family:'Fraunces',serif;font-size:1.05rem;margin-bottom:0.3rem;color:var(--logo-light)">${a.title}</div>
                   <div class="muted small" style="margin-top:auto">${a.summary || ''}</div>
                 </div>
               </a>
@@ -228,12 +238,10 @@ r.get('/', async (req, res) => {
               <a href="/answer/${a.id}" style="text-decoration:none">
                 <div class="card" style="padding:1rem;display:flex;justify-content:space-between;align-items:center">
                   <div>
-                    <div style="font-family:'Fraunces',serif;font-size:1rem">${a.title}</div>
+                    <div style="font-family:'Fraunces',serif;font-size:1rem;color:var(--logo-light)">${a.title}</div>
                     <div class="muted small">${a.summary || ''}</div>
                   </div>
                   <div class="muted small">${a.created_at}</div>
-                </div>
-              </a>
             `).join('')}
           </div>
         </section>
@@ -268,7 +276,7 @@ r.get('/', async (req, res) => {
               <div class="card" style="padding:1rem;display:flex;justify-content:space-between;align-items:center">
                 <div>
                   ${a.niche_name ? `<span class="chip" style="border-color:${a.niche_color}40;color:${a.niche_color};margin-bottom:0.3rem;display:inline-flex">${a.niche_name}</span>` : ''}
-                  <div style="font-family:'Fraunces',serif;font-size:1rem">${a.starred ? '<span class="star">★ </span>' : ''}${a.title}</div>
+                  <div style="font-family:'Fraunces',serif;font-size:1rem;color:var(--logo-light)">${a.starred ? '<span class="star">★ </span>' : ''}${a.title}</div>
                   ${a.summary ? `<div class="muted small">${a.summary}</div>` : ''}
                 </div>
                 <div class="muted small" style="white-space:nowrap;margin-left:1.5rem">${a.created_at}</div>

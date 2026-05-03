@@ -7,7 +7,7 @@ const r = Router();
 r.get('/answer/:id/link', async (req, res) => {
   const rows = await query('SELECT * FROM answers WHERE id = ? AND owner_id = ?', [req.params.id, req.user.id]);
   const a = rows[0];
-  if (!a) return res.redirect('/');
+  if (!a) return res.redirect('/dashboard');
 
   const { search = '', sort = 'created_at', order = 'desc', niche = '' } = req.query;
   const niches = await query('SELECT * FROM niches WHERE owner_id = ?', [req.user.id]);
