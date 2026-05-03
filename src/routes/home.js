@@ -126,7 +126,6 @@ function landingPage(user = null) {
       var suppressed = false;
       var suppressTimer = null;
 
-      // Animate grid highlight from point A to B without moving real cursor
       function randPoint() {
         var margin = 80;
         return {
@@ -135,17 +134,16 @@ function landingPage(user = null) {
         };
       }
 
-      var animating = false;
+      // Current resting position — start offscreen
+      var current = randPoint();
+      if (window._gridMove) window._gridMove(current.x, current.y);
 
       function animateTo(from, to, duration, onDone) {
         var start = null;
-        animating = true;
         function step(ts) {
-          // abort if user took over
-          if (suppressed) { animating = false; if (window._gridClear) window._gridClear(); return; }
+          if (suppressed) { onDone && onDone(from); return; }
           if (!start) start = ts;
           var p = Math.min((ts - start) / duration, 1);
-          // ease in-out cubic
           var e = p < 0.5 ? 4*p*p*p : 1 - Math.pow(-2*p+2,3)/2;
           var x = from.x + (to.x - from.x) * e;
           var y = from.y + (to.y - from.y) * e;
@@ -153,40 +151,38 @@ function landingPage(user = null) {
           if (p < 1) {
             requestAnimationFrame(step);
           } else {
-            animating = false;
-            // linger briefly then fade out
-            setTimeout(function() {
-              if (!suppressed && window._gridClear) window._gridClear();
-              if (onDone) onDone();
-            }, 600);
+            onDone && onDone(to);
           }
         }
         requestAnimationFrame(step);
       }
 
-      function runDemo() {
+      function runDemo(from) {
         if (suppressed) return;
-        var a = randPoint();
-        var b = randPoint();
-        // ensure A and B are reasonably far apart
-        while (Math.hypot(b.x - a.x, b.y - a.y) < 300) b = randPoint();
-        animateTo(a, b, 4000, null);
+        var to = randPoint();
+        while (Math.hypot(to.x - from.x, to.y - from.y) < 300) to = randPoint();
+        animateTo(from, to, 4000, function(arrived) {
+          // stay at arrived point, then start next sweep from there
+          current = arrived;
+          setTimeout(function() {
+            if (!suppressed) runDemo(current);
+          }, 3500);
+        });
       }
 
-      // Suppress demo for 10s on real mouse movement
+      // Suppress demo for 5s on real mouse movement
       document.addEventListener('mousemove', function() {
         suppressed = true;
         clearTimeout(suppressTimer);
         suppressTimer = setTimeout(function() {
           suppressed = false;
+          // resume from last known position
+          runDemo(current);
         }, 5000);
       });
 
-      // First run on load (slight delay so grid canvas is ready)
-      setTimeout(runDemo, 400);
-
-      // Then repeat every 8 seconds
-      setInterval(runDemo, 8000);
+      // First run on load
+      setTimeout(function() { runDemo(current); }, 400);
     })();
     </script>
   `, user);
