@@ -7,24 +7,30 @@
     body {
       width: 280px;
       font-family: 'Segoe UI', sans-serif;
-      background: #0c0c0f;
-      color: #e8e6f0;
+      background: #0f0d0a;
+      color: #ede9e0;
       padding: 1.2rem;
     }
     .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .logo img { height: 22px; width: auto; }
+    .logo span {
       font-size: 1rem;
       font-weight: 600;
-      color: #c8b4fa;
-      margin-bottom: 1rem;
+      color: #fdb201;
       letter-spacing: -0.01em;
     }
     button {
       width: 100%;
       padding: 0.7rem 1rem;
       border-radius: 8px;
-      border: 1px solid #252535;
-      background: #13131a;
-      color: #e8e6f0;
+      border: 1px solid #2e2518;
+      background: #1a1510;
+      color: #ede9e0;
       font-size: 0.85rem;
       cursor: pointer;
       transition: all 0.15s;
@@ -33,12 +39,12 @@
       align-items: center;
       gap: 0.6rem;
     }
-    button:hover { background: #1a1a24; border-color: #c8b4fa; }
+    button:hover { background: #221c12; border-color: #fde68a; }
     button:disabled { opacity: 0.5; cursor: not-allowed; }
     #status {
       margin-top: 0.8rem;
       font-size: 0.78rem;
-      color: #6b6880;
+      color: #7a7060;
       min-height: 1.2rem;
     }
     #status.ok { color: #7ee8b4; }
@@ -46,7 +52,7 @@
   </style>
 </head>
 <body>
-  <div class="logo">✦ Lumina</div>
+  <div class="logo"><img src="icon.png" alt="Lumina"><span>Lumina</span></div>
   <button id="inject-btn">
     <span>⟳</span> Convert Last Answer
   </button>
