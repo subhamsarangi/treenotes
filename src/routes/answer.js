@@ -2,13 +2,22 @@ import { Router } from 'express';
 import { query, run } from '../db/index.js';
 import { layout } from '../lib/layout.js';
 import { renderBlocks } from '../lib/utils.js';
+import { requireAuth } from '../lib/auth.js';
 
 const r = Router();
 
 r.get('/answer/:id', async (req, res) => {
-  const rows = await query('SELECT a.*, n.name as niche_name, n.color as niche_color, n.id as niche_id FROM answers a LEFT JOIN niches n ON a.niche_id = n.id WHERE a.id = ? AND a.owner_id = ?', [req.params.id, req.user.id]);
+  const rows = await query(`
+    SELECT a.*, n.name as niche_name, n.color as niche_color, n.id as niche_id, u.email as owner_email
+    FROM answers a
+    LEFT JOIN niches n ON a.niche_id = n.id
+    LEFT JOIN users u ON a.owner_id = u.id
+    WHERE a.id = ?
+  `, [req.params.id]);
   const a = rows[0];
-  if (!a) return res.redirect('/dashboard');
+  if (!a) return res.status(404).send(layout('Not Found', '<p>Answer not found.</p>', req.user));
+
+  const ownerUsername = a.owner_email ? a.owner_email.split('@')[0] : 'Unknown';
 
   const links = await query(`
     SELECT al.relation_type, al.id as link_id,
@@ -47,7 +56,7 @@ r.get('/answer/:id', async (req, res) => {
       </div>
       <h1 style="margin-top:0.6rem;color:var(--logo-light)">${a.starred ? '<span class="star">★ </span>' : ''}${a.title}</h1>
       ${a.summary ? `<p class="muted mt-1">${a.summary}</p>` : ''}
-      <div class="muted small mt-1">${a.created_at}</div>
+      <div class="muted small mt-1">${a.created_at} · by ${ownerUsername}</div>
 
       <div class="page-content mt-4">
         ${renderBlocks(blocks)}
@@ -61,27 +70,31 @@ r.get('/answer/:id', async (req, res) => {
               <div style="display:flex;align-items:center;gap:0.4rem">
                 <span class="chip">${l.display_type.replace('_',' ')}</span>
                 <a href="/answer/${l.other_id}">${l.other_title}</a>
-                <form method="POST" action="/answer/${a.id}/unlink/${l.link_id}" style="display:inline">
-                  <button type="submit" class="btn btn-ghost small" style="padding:0.2rem 0.4rem;font-size:0.7rem">✕</button>
-                </form>
+                ${req.user && req.user.id === a.owner_id ? `
+                  <form method="POST" action="/answer/${a.id}/unlink/${l.link_id}" style="display:inline">
+                    <button type="submit" class="btn btn-ghost small" style="padding:0.2rem 0.4rem;font-size:0.7rem">✕</button>
+                  </form>
+                ` : ''}
               </div>
             `).join('')}
           </div>
         </div>
       ` : ''}
 
-      <div class="mt-4" style="border-top:1px solid var(--border);padding-top:2rem">
-        <h3 class="mb-2">Options</h3>
-        <div class="flex-gap">
-          <a href="/answer/${a.id}/edit-meta" class="btn">✎ Edit Metadata</a>
-          <a href="/answer/${a.id}/edit-content" class="btn">✎ Edit Content</a>
-          <form method="POST" action="/answer/${a.id}/star">
-            <button type="submit" class="btn ${a.starred ? 'btn-ghost' : ''}">${a.starred ? '★ Unstar' : '☆ Star'}</button>
-          </form>
-          <a href="/answer/${a.id}/link" class="btn">⇔ Link</a>
-          <button class="btn btn-danger" onclick="document.getElementById('del-dialog').classList.add('open')">✕ Delete</button>
+      ${req.user && req.user.id === a.owner_id ? `
+        <div class="mt-4" style="border-top:1px solid var(--border);padding-top:2rem">
+          <h3 class="mb-2">Options</h3>
+          <div class="flex-gap">
+            <a href="/answer/${a.id}/edit-meta" class="btn">✎ Edit Metadata</a>
+            <a href="/answer/${a.id}/edit-content" class="btn">✎ Edit Content</a>
+            <form method="POST" action="/answer/${a.id}/star">
+              <button type="submit" class="btn ${a.starred ? 'btn-ghost' : ''}">${a.starred ? '★ Unstar' : '☆ Star'}</button>
+            </form>
+            <a href="/answer/${a.id}/link" class="btn">⇔ Link</a>
+            <button class="btn btn-danger" onclick="document.getElementById('del-dialog').classList.add('open')">✕ Delete</button>
+          </div>
         </div>
-      </div>
+      ` : ''}
     </div>
 
     <div class="dialog-overlay" id="del-dialog">
@@ -99,7 +112,7 @@ r.get('/answer/:id', async (req, res) => {
   `, req.user));
 });
 
-r.get('/answer/:id/pick-niche', async (req, res) => {
+r.get('/answer/:id/pick-niche', requireAuth, async (req, res) => {
   const rows = await query('SELECT * FROM answers WHERE id = ? AND owner_id = ?', [req.params.id, req.user.id]);
   const a = rows[0];
   if (!a) return res.redirect('/dashboard');
@@ -129,12 +142,12 @@ r.get('/answer/:id/pick-niche', async (req, res) => {
   `, req.user));
 });
 
-r.post('/answer/:id/pick-niche', async (req, res) => {
+r.post('/answer/:id/pick-niche', requireAuth, async (req, res) => {
   await run('UPDATE answers SET niche_id = ? WHERE id = ? AND owner_id = ?', [req.body.niche_id, req.params.id, req.user.id]);
   res.redirect('/answer/' + req.params.id);
 });
 
-r.post('/answer/:id/star', async (req, res) => {
+r.post('/answer/:id/star', requireAuth, async (req, res) => {
   const rows = await query('SELECT starred FROM answers WHERE id = ? AND owner_id = ?', [req.params.id, req.user.id]);
   const a = rows[0];
   if (!a) return res.redirect('/dashboard');
@@ -142,9 +155,8 @@ r.post('/answer/:id/star', async (req, res) => {
   res.redirect('/answer/' + req.params.id);
 });
 
-r.post('/answer/:id/delete', async (req, res) => {
+r.post('/answer/:id/delete', requireAuth, async (req, res) => {
   const id = req.params.id;
-  // Verify ownership first
   const owned = await query('SELECT id FROM answers WHERE id = ? AND owner_id = ?', [id, req.user.id]);
   if (!owned.length) return res.redirect('/dashboard');
 
@@ -163,12 +175,12 @@ r.post('/answer/:id/delete', async (req, res) => {
   res.redirect('/dashboard');
 });
 
-r.post('/answer/:id/unlink/:linkId', async (req, res) => {
+r.post('/answer/:id/unlink/:linkId', requireAuth, async (req, res) => {
   await run('DELETE FROM answer_links WHERE id = ? AND owner_id = ?', [req.params.linkId, req.user.id]);
   res.redirect('/answer/' + req.params.id);
 });
 
-r.get('/answer/:id/edit-meta', async (req, res) => {
+r.get('/answer/:id/edit-meta', requireAuth, async (req, res) => {
   const rows = await query('SELECT * FROM answers WHERE id = ? AND owner_id = ?', [req.params.id, req.user.id]);
   const a = rows[0];
   if (!a) return res.redirect('/dashboard');
@@ -218,7 +230,7 @@ r.get('/answer/:id/edit-meta', async (req, res) => {
   `, req.user));
 });
 
-r.post('/answer/:id/edit-meta', async (req, res) => {
+r.post('/answer/:id/edit-meta', requireAuth, async (req, res) => {
   const { title, niche_id, summary, created_at, image, remove_image } = req.body;
   const finalImage = remove_image === '1' ? null : (image || null);
   await run('UPDATE answers SET title=?, niche_id=?, summary=?, created_at=?, image=? WHERE id=? AND owner_id=?',
@@ -226,7 +238,7 @@ r.post('/answer/:id/edit-meta', async (req, res) => {
   res.redirect('/answer/' + req.params.id);
 });
 
-r.get('/answer/:id/edit-content', async (req, res) => {
+r.get('/answer/:id/edit-content', requireAuth, async (req, res) => {
   const rows = await query('SELECT * FROM answers WHERE id = ? AND owner_id = ?', [req.params.id, req.user.id]);
   const a = rows[0];
   if (!a) return res.redirect('/dashboard');
@@ -323,7 +335,7 @@ r.get('/answer/:id/edit-content', async (req, res) => {
   `, req.user));
 });
 
-r.post('/answer/:id/edit-content', async (req, res) => {
+r.post('/answer/:id/edit-content', requireAuth, async (req, res) => {
   try {
     JSON.parse(req.body.content);
     await run('UPDATE answers SET content=? WHERE id=? AND owner_id=?', [req.body.content, req.params.id, req.user.id]);

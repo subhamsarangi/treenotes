@@ -44,7 +44,7 @@ app.use(homeRouter);
 app.use(requireAuth, nichesRouter);
 app.use(requireAuth, nichePageRouter);
 app.use(requireAuth, importRouter);
-app.use(requireAuth, answerRouter);
+app.use(answerRouter);
 app.use(requireAuth, linkRouter);
 app.use(requireAuth, promptsRouter);
 app.use(requireAuth, accountRouter);

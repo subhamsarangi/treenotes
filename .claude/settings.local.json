@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(node --check src/routes/answer.js)",
+      "Bash(node --check server.js)"
+    ]
+  }
+}
