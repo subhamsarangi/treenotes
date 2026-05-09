@@ -430,6 +430,7 @@ html.large-text-pending select { font-size: 1rem; }
     ${user ? `
     <a href="/">Home</a>
     <a href="/dashboard">Dashboard</a>
+    <a href="/answers">Answers</a>
     <a href="/prompts">Prompts</a>
     <a href="/import">Import</a>
     <a href="/niches">Niches</a>

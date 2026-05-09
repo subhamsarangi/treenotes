@@ -13,6 +13,7 @@ import linkRouter from "./src/routes/link.js";
 import promptsRouter from "./src/routes/prompts.js";
 import accountRouter from "./src/routes/account.js";
 import graphRouter from "./src/routes/graph.js";
+import answersRouter from "./src/routes/answers.js";
 
 const app = express();
 app.use(express.static('public'));
@@ -57,6 +58,7 @@ app.use(requireAuth, linkRouter);
 app.use(requireAuth, promptsRouter);
 app.use(requireAuth, accountRouter);
 app.use(requireAuth, graphRouter);
+app.use(requireAuth, answersRouter);
 
 // Export for Vercel
 export default app;
