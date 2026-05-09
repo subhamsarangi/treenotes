@@ -185,6 +185,7 @@ r.get('/answer/:id/link', async (req, res) => {
                   <select name="relation_type" style="width:auto;font-size:0.75rem;height:36px;background:var(--surface2)">
                     <option value="friend">friend</option>
                     <option value="parent">parent</option>
+                    <option value="child">child</option>
                     <option value="sibling">sibling</option>
                   </select>
                   <button type="submit" class="btn btn-primary small" style="height:32px;padding:0 1rem;font-size:0.8rem">Link</button>
@@ -234,18 +235,29 @@ r.post('/answer/:id/link', async (req, res) => {
 
   if (!to_id || !relation_type) return res.redirect(`/answer/${from_id}/link`);
 
-  const owned = await query('SELECT id FROM answers WHERE id IN (?, ?) AND owner_id = ?', [from_id, to_id, req.user.id]);
+  // Handle 'child' by reversing IDs and using 'parent' relation
+  let f_id = from_id;
+  let t_id = to_id;
+  let r_type = relation_type;
+
+  if (relation_type === 'child') {
+    f_id = to_id;
+    t_id = from_id;
+    r_type = 'parent';
+  }
+
+  const owned = await query('SELECT id FROM answers WHERE id IN (?, ?) AND owner_id = ?', [f_id, t_id, req.user.id]);
   if (owned.length < 2) return res.redirect(`/answer/${from_id}/link`);
 
   const already = await query('SELECT id FROM answer_links WHERE (from_id=? AND to_id=?) OR (from_id=? AND to_id=?)',
-    [from_id, to_id, to_id, from_id]);
+    [f_id, t_id, t_id, f_id]);
   
-  if (relation_type === 'parent') {
-    const hasParent = await query("SELECT id FROM answer_links WHERE from_id = ? AND relation_type = 'parent'", [from_id]);
+  if (r_type === 'parent') {
+    const hasParent = await query("SELECT id FROM answer_links WHERE from_id = ? AND relation_type = 'parent'", [f_id]);
     if (hasParent.length) return res.send(layout('Cannot Link', `
       <div class="container"><div class="card mt-4" style="border-color:var(--danger)">
         <h2 style="color:var(--danger)">Cannot add parent</h2>
-        <p class="mt-2">This answer already has a parent. Remove the existing parent link first.</p>
+        <p class="mt-2">The page "<strong>${f_id === from_id ? 'Current Page' : 'Selected Page'}</strong>" already has a parent. Remove the existing parent link first.</p>
         <div class="flex-gap mt-3">
           <a href="/answer/${from_id}/link" class="btn">← Back to Linking</a>
           <a href="/answer/${from_id}" class="btn btn-ghost">Back to Answer</a>
@@ -255,7 +267,7 @@ r.post('/answer/:id/link', async (req, res) => {
   }
 
   if (!already.length) {
-    await run('INSERT INTO answer_links (from_id, to_id, relation_type, owner_id) VALUES (?,?,?,?)', [from_id, to_id, relation_type, req.user.id]);
+    await run('INSERT INTO answer_links (from_id, to_id, relation_type, owner_id) VALUES (?,?,?,?)', [f_id, t_id, r_type, req.user.id]);
   }
 
   res.redirect(`/answer/${from_id}`);
