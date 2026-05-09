@@ -108,10 +108,13 @@ r.get('/graph', async (req, res) => {
 
       // Simulation
       const sim = d3.forceSimulation(NODES)
-        .force('link', d3.forceLink(EDGES).id(d => d.id).distance(120).strength(0.6))
-        .force('charge', d3.forceManyBody().strength(-320))
+        .velocityDecay(0.4) // Makes it settle faster
+        .force('link', d3.forceLink(EDGES).id(d => d.id).distance(100).strength(0.7))
+        .force('charge', d3.forceManyBody().strength(-200)) // Less aggressive repulsion
         .force('center', d3.forceCenter(width / 2, height / 2))
-        .force('collision', d3.forceCollide(28));
+        .force('x', d3.forceX(width / 2).strength(0.05)) // Soft pull to center
+        .force('y', d3.forceY(height / 2).strength(0.05))
+        .force('collision', d3.forceCollide(32)); // Slightly larger collision
 
       // Edges
       const link = g.append('g').selectAll('line')
@@ -128,7 +131,7 @@ r.get('/graph', async (req, res) => {
         .attr('class', 'graph-node')
         .style('cursor', 'grab')
         .call(d3.drag()
-          .on('start', (e, d) => { if (!e.active) sim.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; d._dragged = false; })
+          .on('start', (e, d) => { if (!e.active) sim.alphaTarget(0.1).restart(); d.fx = d.x; d.fy = d.y; d._dragged = false; })
           .on('drag',  (e, d) => { d.fx = e.x; d.fy = e.y; d._dragged = true; })
           .on('end',   (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = null; d.fy = null; })
         );
