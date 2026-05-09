@@ -96,6 +96,9 @@ async function handleAction(type) {
 document.getElementById('btn-convert-last').addEventListener('click', () => handleAction('convert'));
 document.getElementById('btn-fresh').addEventListener('click', () => handleAction('fresh'));
 document.getElementById('btn-manual').addEventListener('click', () => handleAction('manual'));
+document.getElementById('btn-import-page').addEventListener('click', () => {
+  chrome.tabs.create({ url: 'http://localhost:3003/import' });
+});
 
 document.querySelectorAll('.copy-btn').forEach(btn => {
   btn.addEventListener('click', async (e) => {

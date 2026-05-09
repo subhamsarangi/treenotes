@@ -5,7 +5,7 @@ import { layout } from '../lib/layout.js';
 
 const r = Router();
 
-function authForm({ mode = 'login', error = '', email = '' } = {}) {
+function authForm({ mode = 'login', error = '', email = '', returnTo = '/dashboard' } = {}) {
   const isLogin = mode === 'login';
   return layout(isLogin ? 'Sign In' : 'Create Account', `
     <div style="min-height:80vh;display:flex;align-items:center;justify-content:center">
@@ -19,6 +19,7 @@ function authForm({ mode = 'login', error = '', email = '' } = {}) {
         ${error ? `<div class="card mb-3" style="border-color:var(--danger)40;color:var(--danger);padding:0.8rem 1rem;font-size:0.85rem">${error}</div>` : ''}
 
         <form method="POST" action="/${isLogin ? 'login' : 'register'}" id="auth-form" class="card" style="padding:1.5rem">
+          <input type="hidden" name="returnTo" value="${returnTo}">
           <div class="form-group">
             <label>Email</label>
             <input name="email" type="email" required autocomplete="email" value="${email}" placeholder="you@example.com">
@@ -103,28 +104,30 @@ function authForm({ mode = 'login', error = '', email = '' } = {}) {
 }
 
 r.get('/login', (req, res) => {
-  if (req.session.userId) return res.redirect('/dashboard');
-  res.send(authForm({ mode: 'login' }));
+  const returnTo = req.query.returnTo || '/dashboard';
+  if (req.session.userId) return res.redirect(returnTo);
+  res.send(authForm({ mode: 'login', returnTo }));
 });
 
 r.get('/register', (req, res) => {
-  if (req.session.userId) return res.redirect('/dashboard');
-  res.send(authForm({ mode: 'register' }));
+  const returnTo = req.query.returnTo || '/dashboard';
+  if (req.session.userId) return res.redirect(returnTo);
+  res.send(authForm({ mode: 'register', returnTo }));
 });
 
 r.post('/register', async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, returnTo = '/dashboard' } = req.body;
 
   if (!email || !password) {
-    return res.send(authForm({ mode: 'register', error: 'Email and password are required.', email }));
+    return res.send(authForm({ mode: 'register', error: 'Email and password are required.', email, returnTo }));
   }
   if (password.length < 6) {
-    return res.send(authForm({ mode: 'register', error: 'Password must be at least 6 characters.', email }));
+    return res.send(authForm({ mode: 'register', error: 'Password must be at least 6 characters.', email, returnTo }));
   }
 
   const existing = await query('SELECT id FROM users WHERE email = ?', [email.toLowerCase()]);
   if (existing.length) {
-    return res.send(authForm({ mode: 'register', error: 'An account with this email already exists.', email }));
+    return res.send(authForm({ mode: 'register', error: 'An account with this email already exists.', email, returnTo }));
   }
 
   const hash = await bcrypt.hash(password, 12);
@@ -135,34 +138,34 @@ r.post('/register', async (req, res) => {
   req.session.email = email.toLowerCase();
   req.session.save((err) => {
     if (err) console.error('Session save error:', err);
-    res.redirect('/dashboard');
+    res.redirect(returnTo);
   });
 });
 
 r.post('/login', async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, returnTo = '/dashboard' } = req.body;
 
   if (!email || !password) {
-    return res.send(authForm({ mode: 'login', error: 'Email and password are required.', email }));
+    return res.send(authForm({ mode: 'login', error: 'Email and password are required.', email, returnTo }));
   }
 
   const users = await query('SELECT * FROM users WHERE email = ?', [email.toLowerCase()]);
   const user = users[0];
 
   if (!user) {
-    return res.send(authForm({ mode: 'login', error: 'Invalid email or password.', email }));
+    return res.send(authForm({ mode: 'login', error: 'Invalid email or password.', email, returnTo }));
   }
 
   const valid = await bcrypt.compare(password, user.password_hash);
   if (!valid) {
-    return res.send(authForm({ mode: 'login', error: 'Invalid email or password.', email }));
+    return res.send(authForm({ mode: 'login', error: 'Invalid email or password.', email, returnTo }));
   }
 
   req.session.userId = user.id;
   req.session.email = user.email;
   req.session.save((err) => {
     if (err) console.error('Session save error:', err);
-    res.redirect('/dashboard');
+    res.redirect(returnTo);
   });
 });
 
