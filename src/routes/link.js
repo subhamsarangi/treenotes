@@ -258,11 +258,26 @@ r.post('/answer/:id/link', async (req, res) => {
     [f_id, t_id, t_id, f_id]);
   
   if (r_type === 'parent') {
+    // 1. Single parent check
     const hasParent = await query("SELECT id FROM answer_links WHERE from_id = ? AND relation_type = 'parent'", [f_id]);
     if (hasParent.length) return res.send(layout('Cannot Link', `
       <div class="container"><div class="card mt-4" style="border-color:var(--danger)">
         <h2 style="color:var(--danger)">Cannot add parent</h2>
         <p class="mt-2">The page "<strong>${f_id === from_id ? 'Current Page' : 'Selected Page'}</strong>" already has a parent. Remove the existing parent link first.</p>
+        <div class="flex-gap mt-3">
+          <a href="/answer/${from_id}/link" class="btn">← Back to Linking</a>
+          <a href="/answer/${from_id}" class="btn btn-ghost">Back to Answer</a>
+        </div>
+      </div></div>
+    `, req.user));
+
+    // 2. Circularity check (Direct)
+    // If we are trying to make T the parent of F, check if F is already the parent of T.
+    const isParentOf = await query("SELECT id FROM answer_links WHERE from_id = ? AND to_id = ? AND relation_type = 'parent'", [t_id, f_id]);
+    if (isParentOf.length) return res.send(layout('Circular Relation', `
+      <div class="container"><div class="card mt-4" style="border-color:var(--danger)">
+        <h2 style="color:var(--danger)">Circular Relation Detected</h2>
+        <p class="mt-2">The page "<strong>${t_id === from_id ? 'Current Page' : 'Selected Page'}</strong>" is already a <strong>child</strong> of "<strong>${f_id === from_id ? 'Current Page' : 'Selected Page'}</strong>". It cannot also be its parent.</p>
         <div class="flex-gap mt-3">
           <a href="/answer/${from_id}/link" class="btn">← Back to Linking</a>
           <a href="/answer/${from_id}" class="btn btn-ghost">Back to Answer</a>
