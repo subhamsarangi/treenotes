@@ -61,7 +61,7 @@ r.get('/answer/:id/link', async (req, res) => {
       </div>
 
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1rem;margin-bottom:3rem;position:relative">
-        <button class="btn btn-ghost filter-toggle-btn" style="width:100%;margin-bottom:0;display:none;justify-content:center;gap:0.5rem" onclick="const f=this.nextElementSibling; f.classList.toggle('open'); this.textContent = f.classList.contains('open') ? '✕ Close Filters' : '🔍 Filter & Sort'">
+        <button type="button" class="btn btn-ghost filter-toggle-btn" style="width:100%;margin-bottom:0;display:none;justify-content:center;gap:0.5rem" onclick="const f=this.nextElementSibling; f.classList.toggle('open'); this.textContent = f.classList.contains('open') ? '✕ Close Filters' : '🔍 Filter & Sort'">
           🔍 Filter & Sort
         </button>
         <form method="GET" class="responsive-filter-form" style="gap:1rem;align-items:end">

@@ -363,6 +363,8 @@ a.loading::after {
   animation: spin 0.6s linear infinite;
   opacity: 0.55;
 }
+/* When an <a> wraps a loading card, block clicks on the <a> itself too */
+a:has(> .card.loading) { pointer-events: none; }
 
 /* Large text mode */
 body.large-text { font-size: 1.1rem; }
@@ -622,13 +624,20 @@ ${body}
 
   const loader = document.getElementById('page-loader');
 
-  // Show page loader + mark the link element on internal anchor navigation
+  // Show page loader + mark the correct element as loading on internal navigation
   document.addEventListener('click', function(e) {
     var a = e.target.closest('a');
     if (a && a.href && !a.href.startsWith('#') && !a.href.startsWith('javascript') &&
         a.hostname === location.hostname && !a.classList.contains('no-loader')) {
       loader.classList.add('active');
-      a.classList.add('loading');
+      // If the link wraps a card, mark the card itself (has absolute-positioned spinner).
+      // Otherwise mark the <a> (inline spinner is fine for plain text links).
+      var innerCard = a.querySelector(':scope > .card');
+      if (innerCard) {
+        innerCard.classList.add('loading');
+      } else {
+        a.classList.add('loading');
+      }
     }
 
     // Mark navigable cards (.card[onclick] containing window.location) as loading

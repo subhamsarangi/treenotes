@@ -54,7 +54,7 @@ r.get('/niche/:id', async (req, res) => {
         </div>
       </div>
 
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1rem;margin-bottom:3rem;position:relative">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1rem;margin-bottom:3rem;margin-top:.5rem; position:relative">
         <button class="btn btn-ghost filter-toggle-btn" style="width:100%;margin-bottom:0;display:none;justify-content:center;gap:0.5rem" onclick="const f=this.nextElementSibling; f.classList.toggle('open'); this.textContent = f.classList.contains('open') ? '✕ Close Filters' : '🔍 Filter & Sort'">
           🔍 Filter & Sort
         </button>
@@ -84,7 +84,7 @@ r.get('/niche/:id', async (req, res) => {
             }
             @media (min-width: 960px) { 
               .filter-toggle-btn { display: none !important; }
-              .responsive-filter-form { display: grid; grid-template-columns: 1.2fr auto auto auto 1fr; margin-top: 0; } 
+              .responsive-filter-form { display: grid; grid-template-columns: 1.2fr auto auto auto 1fr; margin-top: 0; padding-bottom: 0.75rem; } 
             }
 
             .floating-actions .btn { 
