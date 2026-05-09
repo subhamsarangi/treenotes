@@ -382,18 +382,37 @@ html.large-text-pending select { font-size: 1rem; }
 
 /* Page transition overlay */
 #page-loader {
-  display: none;
   position: fixed;
-  top: 0; left: 0; right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  top: 0; left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2), var(--accent3));
+  background-size: 200% 100%;
   z-index: 9999;
-  animation: loading-bar 1.2s ease-in-out infinite;
+  transform: scaleX(0);
+  transform-origin: left;
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
 }
-#page-loader.active { display: block; }
-@keyframes loading-bar {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
+#page-loader.active {
+  opacity: 1;
+  animation: loading-bar-sweep 1.4s ease-in-out infinite;
+}
+#page-loader.finishing {
+  opacity: 1;
+  animation: loading-bar-finish 0.35s ease-out forwards;
+}
+@keyframes loading-bar-sweep {
+  0%   { transform: scaleX(0.05); transform-origin: left; }
+  40%  { transform: scaleX(0.6);  transform-origin: left; }
+  60%  { transform: scaleX(0.75); transform-origin: left; }
+  100% { transform: scaleX(0.9);  transform-origin: left; }
+}
+@keyframes loading-bar-finish {
+  0%   { transform: scaleX(0.9); transform-origin: left; opacity: 1; }
+  60%  { transform: scaleX(1);   transform-origin: left; opacity: 1; }
+  100% { transform: scaleX(1);   transform-origin: left; opacity: 0; }
 }
 </style>
 </head>
@@ -680,7 +699,13 @@ ${body}
   // Remove loading state whenever the page becomes interactive again
   // (covers: server-rendered error pages, validation failures, back/forward)
   function clearLoading() {
+    if (!loader.classList.contains('active') && !loader.classList.contains('finishing')) return;
     loader.classList.remove('active');
+    loader.classList.add('finishing');
+    loader.addEventListener('animationend', function onDone() {
+      loader.classList.remove('finishing');
+      loader.removeEventListener('animationend', onDone);
+    });
     document.querySelectorAll('.btn.loading, a.loading, .card.loading').forEach(function(el) {
       el.classList.remove('loading');
     });
@@ -689,10 +714,17 @@ ${body}
   // pageshow fires on back/forward cache restores too
   window.addEventListener('pageshow', clearLoading);
 
-  // visibilitychange clears stuck spinners when user returns to the tab
+  // visibilitychange: page finished loading while in background tab — stop bar
   document.addEventListener('visibilitychange', function() {
     if (document.visibilityState === 'visible') clearLoading();
   });
+
+  // document readyState: catches pages that finish loading while tab is active
+  if (document.readyState === 'complete') {
+    clearLoading();
+  } else {
+    window.addEventListener('load', clearLoading);
+  }
 })();
 </script>
 </body>
