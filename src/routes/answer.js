@@ -39,8 +39,6 @@ r.get('/answer/:id', async (req, res) => {
         CASE
           WHEN al.relation_type = 'parent' THEN 'child'
           WHEN al.relation_type = 'child' THEN 'parent'
-          WHEN al.relation_type = 'prev_sibling' THEN 'next_sibling'
-          WHEN al.relation_type = 'next_sibling' THEN 'prev_sibling'
           ELSE al.relation_type
         END
       END as display_type,

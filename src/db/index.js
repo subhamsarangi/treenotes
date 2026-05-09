@@ -33,7 +33,7 @@ export async function getDb() {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       from_id TEXT NOT NULL REFERENCES answers(id),
       to_id TEXT NOT NULL REFERENCES answers(id),
-      relation_type TEXT NOT NULL CHECK(relation_type IN ('parent','prev_sibling','next_sibling','friend'))
+      relation_type TEXT NOT NULL CHECK(relation_type IN ('parent', 'sibling', 'friend', 'child'))
     );
     CREATE INDEX IF NOT EXISTS idx_answers_niche_id ON answers(niche_id);
     CREATE INDEX IF NOT EXISTS idx_answers_starred ON answers(starred);

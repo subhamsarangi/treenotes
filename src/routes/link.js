@@ -185,8 +185,7 @@ r.get('/answer/:id/link', async (req, res) => {
                   <select name="relation_type" style="width:auto;font-size:0.75rem;height:32px;background:var(--surface2)">
                     <option value="friend">friend</option>
                     <option value="parent">parent</option>
-                    <option value="prev_sibling">prev sibling</option>
-                    <option value="next_sibling">next sibling</option>
+                    <option value="sibling">sibling</option>
                   </select>
                   <button type="submit" class="btn btn-primary small" style="height:32px;padding:0 1rem;font-size:0.8rem">Link</button>
                 </form>

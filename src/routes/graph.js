@@ -79,10 +79,9 @@ r.get('/graph', async (req, res) => {
 
       // Edge style by type
       const edgeStyle = {
-        parent:       { stroke: '#c8b4fa', width: 2,   dash: null },
-        prev_sibling: { stroke: '#7ee8b4', width: 1.5, dash: '4,3' },
-        next_sibling: { stroke: '#7ee8b4', width: 1.5, dash: '4,3' },
-        friend:       { stroke: '#f4a96a', width: 1.5, dash: '2,2' },
+        parent:  { stroke: '#c8b4fa', width: 2,   dash: null },
+        sibling: { stroke: '#7ee8b4', width: 1.5, dash: '4,3' },
+        friend:  { stroke: '#f4a96a', width: 1.5, dash: '2,2' },
       };
 
       // Arrow markers per type
