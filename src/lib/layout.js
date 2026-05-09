@@ -599,7 +599,7 @@ ${body}
 
   const loader = document.getElementById('page-loader');
 
-  // Show loader on navigation links (not buttons, not hash, not external)
+  // Show loading state on buttons
   document.addEventListener('click', function(e) {
     const a = e.target.closest('a');
     if (a && a.href && !a.href.startsWith('#') && !a.href.startsWith('javascript') &&
@@ -607,17 +607,30 @@ ${body}
       loader.classList.add('active');
     }
 
-    // Show loading state on submit buttons inside forms
-    const btn = e.target.closest('button[type="submit"], button:not([type])');
-    if (btn && btn.closest('form') && !btn.onclick) {
-      btn.classList.add('loading');
+    const btn = e.target.closest('.btn');
+    if (btn) {
+      const isSubmit = btn.type === 'submit' || (btn.tagName === 'BUTTON' && !btn.type);
+      const isFormButton = btn.closest('form');
+      
+      if (isSubmit && isFormButton) {
+        // Delay slightly to allow form validation to happen
+        setTimeout(() => {
+          if (!isFormButton.checkValidity || isFormButton.checkValidity()) {
+            btn.classList.add('loading');
+            loader.classList.add('active');
+          }
+        }, 10);
+      } else if (btn.classList.contains('btn-primary') || btn.tagName === 'BUTTON') {
+        // Generic buttons that might trigger actions
+        // (Don't auto-load for all .btn to avoid false positives on simple toggles)
+      }
     }
   });
 
   // Show loader on form submit
   document.addEventListener('submit', function(e) {
     loader.classList.add('active');
-    const btn = e.target.querySelector('button[type="submit"], button:not([type="button"])');
+    const btn = e.target.querySelector('button[type="submit"], button:not([type="button"]), .btn-primary');
     if (btn) btn.classList.add('loading');
   });
 

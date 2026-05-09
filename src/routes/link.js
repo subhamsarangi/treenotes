@@ -90,7 +90,7 @@ r.get('/answer/:id/link', async (req, res) => {
             }
             @media (min-width: 960px) { 
               .filter-toggle-btn { display: none !important; }
-              .responsive-filter-form { display: grid; grid-template-columns: 1.2fr auto auto auto 1fr; margin-top: 0; } 
+              .responsive-filter-form { display: grid; grid-template-columns: 1.2fr auto auto auto 1fr; margin-top: 0; padding-bottom: 0.75rem; } 
             }
 
             .floating-actions .btn { 
