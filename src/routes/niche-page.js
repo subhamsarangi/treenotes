@@ -9,13 +9,15 @@ r.get('/niche/:id', async (req, res) => {
   const niche = niches[0];
   if (!niche) return res.redirect('/dashboard');
 
-  const { search = '', sort = 'created_at', order = 'desc', starred } = req.query;
+  const { search = '', sort = 'created_at', order = 'desc', starred, visibility = 'all' } = req.query;
 
   let sql = 'SELECT * FROM answers WHERE niche_id = ? AND owner_id = ?';
   const params = [req.params.id, req.user.id];
 
   if (search) { sql += ' AND (title LIKE ? OR summary LIKE ?)'; params.push(`%${search}%`, `%${search}%`); }
   if (starred === '1') { sql += ' AND starred = 1'; }
+  if (visibility === 'public') { sql += ' AND is_public = 1'; }
+  else if (visibility === 'private') { sql += ' AND is_public = 0'; }
 
   const safeSort = ['created_at','title'].includes(sort) ? sort : 'created_at';
   const safeOrder = order === 'asc' ? 'ASC' : 'DESC';
@@ -44,10 +46,18 @@ r.get('/niche/:id', async (req, res) => {
       </div>
 
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1.5rem;margin-bottom:2rem">
-        <form method="GET" style="display:grid;grid-template-columns:1fr auto auto auto auto;gap:1rem;align-items:end">
+        <form method="GET" style="display:grid;grid-template-columns:1fr auto auto auto auto auto;gap:1rem;align-items:end">
           <div>
             <label>Search</label>
             <input name="search" placeholder="Search answers…" value="${search}">
+          </div>
+          <div>
+            <label>Visibility</label>
+            <select name="visibility" style="width:auto">
+              <option value="all" ${visibility === 'all' ? 'selected' : ''}>All</option>
+              <option value="public" ${visibility === 'public' ? 'selected' : ''}>Public</option>
+              <option value="private" ${visibility === 'private' ? 'selected' : ''}>Private</option>
+            </select>
           </div>
           <div>
             <label>Sort</label>
