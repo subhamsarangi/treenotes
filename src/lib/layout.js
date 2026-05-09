@@ -322,7 +322,7 @@ label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; co
   box-shadow: 0 0 8px var(--accent);
 }
 
-/* Button + link loading state */
+/* Button + link + card loading state */
 .btn.loading,
 a.loading {
   opacity: 0.65;
@@ -343,6 +343,26 @@ a.loading::after {
   vertical-align: middle;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* Navigable card loading state */
+.card.loading {
+  opacity: 0.65;
+  pointer-events: none;
+  position: relative;
+}
+.card.loading::after {
+  content: '';
+  position: absolute;
+  top: 0.6rem;
+  right: 0.7rem;
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  opacity: 0.55;
+}
 
 /* Large text mode */
 body.large-text { font-size: 1.1rem; }
@@ -610,6 +630,16 @@ ${body}
       loader.classList.add('active');
       a.classList.add('loading');
     }
+
+    // Mark navigable cards (.card[onclick] containing window.location) as loading
+    var card = e.target.closest('.card[onclick]');
+    if (card) {
+      var oc = card.getAttribute('onclick') || '';
+      if (oc.indexOf('location') !== -1) {
+        card.classList.add('loading');
+        loader.classList.add('active');
+      }
+    }
   });
 
   // Show loader + button loading on form submit, but only if validation didn't prevent it
@@ -642,7 +672,7 @@ ${body}
   // (covers: server-rendered error pages, validation failures, back/forward)
   function clearLoading() {
     loader.classList.remove('active');
-    document.querySelectorAll('.btn.loading, a.loading').forEach(function(el) {
+    document.querySelectorAll('.btn.loading, a.loading, .card.loading').forEach(function(el) {
       el.classList.remove('loading');
     });
   }
