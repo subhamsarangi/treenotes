@@ -58,6 +58,12 @@ export async function getDb() {
     CREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions(expires_at);
   `);
 
+  // Simple migrations for existing databases
+  try { await client.execute('ALTER TABLE niches ADD COLUMN owner_id TEXT'); } catch(e) {}
+  try { await client.execute('ALTER TABLE answers ADD COLUMN owner_id TEXT'); } catch(e) {}
+  try { await client.execute('ALTER TABLE answers ADD COLUMN is_public INTEGER DEFAULT 0'); } catch(e) {}
+  try { await client.execute('ALTER TABLE answer_links ADD COLUMN owner_id TEXT'); } catch(e) {}
+
   // Seed prompts from files if table is empty
   const existing = await client.execute('SELECT COUNT(*) as cnt FROM prompts');
   if (existing.rows[0].cnt === 0) {

@@ -221,6 +221,7 @@ r.get('/dashboard', async (req, res) => {
                 <div class="card" style="display:flex;flex-direction:column;width:100%">
                   <div class="flex-gap mb-1">
                     <span class="chip" style="border-color:${a.niche_color}40;color:${a.niche_color}">${a.niche_name || '—'}</span>
+                    ${!a.is_public ? `<span class="chip" style="font-size:0.6rem;background:var(--surface2);color:var(--muted)">🔒 Private</span>` : ''}
                     <span class="star small">★</span>
                   </div>
                   <div style="font-family:'Fraunces',serif;font-size:1.05rem;margin-bottom:0.3rem;color:var(--logo-light)">${a.title}</div>
@@ -241,7 +242,8 @@ r.get('/dashboard', async (req, res) => {
                 <div class="card" style="padding:1rem;display:flex;justify-content:space-between;align-items:center">
                   <div>
                     <div style="font-family:'Fraunces',serif;font-size:1rem;color:var(--logo-light)">${a.title}</div>
-                    <div class="muted small">${a.summary || ''}</div>
+                    ${!a.is_public ? `<div class="mt-1"><span class="chip" style="font-size:0.6rem;background:var(--surface2);color:var(--muted);padding:0.1rem 0.4rem">🔒 Private</span></div>` : ''}
+                    <div class="muted small mt-1">${a.summary || ''}</div>
                   </div>
                   <div class="muted small">${a.created_at}</div>
             `).join('')}
@@ -277,7 +279,10 @@ r.get('/dashboard', async (req, res) => {
             <a href="/answer/${a.id}" style="text-decoration:none">
               <div class="card" style="padding:1rem;display:flex;justify-content:space-between;align-items:center">
                 <div>
-                  ${a.niche_name ? `<span class="chip" style="border-color:${a.niche_color}40;color:${a.niche_color};margin-bottom:0.3rem;display:inline-flex">${a.niche_name}</span>` : ''}
+                  <div class="flex-gap" style="margin-bottom:0.3rem">
+                    ${a.niche_name ? `<span class="chip" style="border-color:${a.niche_color}40;color:${a.niche_color};display:inline-flex">${a.niche_name}</span>` : ''}
+                    ${!a.is_public ? `<span class="chip" style="font-size:0.6rem;background:var(--surface2);color:var(--muted)">🔒 Private</span>` : ''}
+                  </div>
                   <div style="font-family:'Fraunces',serif;font-size:1rem;color:var(--logo-light)">${a.starred ? '<span class="star">★ </span>' : ''}${a.title}</div>
                   ${a.summary ? `<div class="muted small">${a.summary}</div>` : ''}
                 </div>

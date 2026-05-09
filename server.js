@@ -34,8 +34,17 @@ app.use(session({
   }
 }));
 
+// Populate req.user for all routes if session exists
+app.use((req, res, next) => {
+  if (req.session && req.session.userId) {
+    req.user = { id: req.session.userId, email: req.session.email };
+  }
+  next();
+});
+
 // Public routes
 app.use(authRouter);
+app.use(answerRouter);
 
 // Home handles its own auth (shows landing to guests, dashboard to users)
 app.use(homeRouter);
@@ -44,7 +53,6 @@ app.use(homeRouter);
 app.use(requireAuth, nichesRouter);
 app.use(requireAuth, nichePageRouter);
 app.use(requireAuth, importRouter);
-app.use(answerRouter);
 app.use(requireAuth, linkRouter);
 app.use(requireAuth, promptsRouter);
 app.use(requireAuth, accountRouter);
