@@ -16,7 +16,7 @@ import graphRouter from "./src/routes/graph.js";
 import answersRouter from "./src/routes/answers.js";
 
 const app = express();
-app.use(express.static('public'));
+app.use(express.static('public', { maxAge: '30d' }));
 app.use(express.urlencoded({ extended: true, limit: "2mb" }));
 app.use(express.json());
 
