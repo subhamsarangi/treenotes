@@ -17,6 +17,19 @@ r.get('/answer/:id', async (req, res) => {
   const a = rows[0];
   if (!a) return res.status(404).send(layout('Not Found', '<p>Answer not found.</p>', req.user));
 
+  const isOwner = req.user && req.user.id === a.owner_id;
+  if (!a.is_public && !isOwner) {
+    return res.status(403).send(layout('Private Answer', `
+      <div class="container mt-4">
+        <div class="card" style="border-color:var(--danger)40;text-align:center;padding:3rem">
+          <h2 style="color:var(--danger)">🔒 This answer is private</h2>
+          <p class="muted mt-2">You must be signed in as the owner to view this content.</p>
+          <a href="/login" class="btn btn-primary mt-3">Sign In</a>
+        </div>
+      </div>
+    `, req.user));
+  }
+
   const ownerUsername = a.owner_email ? a.owner_email.split('@')[0] : 'Unknown';
 
   const links = await query(`
@@ -55,6 +68,7 @@ r.get('/answer/:id', async (req, res) => {
         ${a.niche_id ? `<a href="/niche/${a.niche_id}" class="chip" style="border-color:${a.niche_color}40;color:${a.niche_color}">${a.niche_name}</a>` : ''}
       </div>
       <h1 style="margin-top:0.6rem;color:var(--logo-light)">${a.starred ? '<span class="star">★ </span>' : ''}${a.title}</h1>
+      ${a.is_public ? `<div class="mb-2"><span class="chip" style="background:var(--accent)15;border-color:var(--accent)40;color:var(--accent);font-size:0.7rem">🌐 Public</span></div>` : ''}
       ${a.summary ? `<p class="muted mt-1">${a.summary}</p>` : ''}
       <div class="muted small mt-1">${a.created_at} · by ${ownerUsername}</div>
 
@@ -221,6 +235,13 @@ r.get('/answer/:id/edit-meta', requireAuth, async (req, res) => {
           <label>Created At</label>
           <input name="created_at" type="date" value="${a.created_at}">
         </div>
+        <div class="form-group">
+          <label class="toggle">
+            <input type="checkbox" name="is_public" value="1" ${a.is_public ? 'checked' : ''}>
+            <span style="text-transform:none;letter-spacing:0;font-size:0.9rem">Make this answer public</span>
+          </label>
+          <p class="muted small" style="margin-left:3.2rem;margin-top:0.3rem">Public answers can be viewed by anyone with the link.</p>
+        </div>
         <div class="flex-gap mt-3">
           <button type="submit" class="btn btn-primary">Save</button>
           <a href="/answer/${a.id}" class="btn btn-ghost">Cancel</a>
@@ -231,10 +252,11 @@ r.get('/answer/:id/edit-meta', requireAuth, async (req, res) => {
 });
 
 r.post('/answer/:id/edit-meta', requireAuth, async (req, res) => {
-  const { title, niche_id, summary, created_at, image, remove_image } = req.body;
+  const { title, niche_id, summary, created_at, image, remove_image, is_public } = req.body;
   const finalImage = remove_image === '1' ? null : (image || null);
-  await run('UPDATE answers SET title=?, niche_id=?, summary=?, created_at=?, image=? WHERE id=? AND owner_id=?',
-    [title, niche_id || null, summary || '', created_at, finalImage, req.params.id, req.user.id]);
+  const isPublic = is_public === '1' ? 1 : 0;
+  await run('UPDATE answers SET title=?, niche_id=?, summary=?, created_at=?, image=?, is_public=? WHERE id=? AND owner_id=?',
+    [title, niche_id || null, summary || '', created_at, finalImage, isPublic, req.params.id, req.user.id]);
   res.redirect('/answer/' + req.params.id);
 });
 

@@ -56,7 +56,15 @@ r.get('/import', async (req, res) => {
         <div id="preview-inner"></div>
       </div>
 
-      <div class="flex-gap">
+      <div class="form-group">
+        <label class="toggle">
+          <input type="checkbox" id="public-toggle">
+          <span>Make this answer public</span>
+        </label>
+        <p class="muted small" style="margin-left:3.2rem;margin-top:0.3rem">Public answers are visible to everyone via their direct link.</p>
+      </div>
+
+      <div class="flex-gap mt-3">
         <button class="btn" onclick="preview()">Preview</button>
         <button class="btn btn-primary" onclick="importAnswer()">Import</button>
       </div>
@@ -119,6 +127,7 @@ r.get('/import', async (req, res) => {
           '<div><strong>Title:</strong> ' + (data.title || '—') + '</div>' +
           '<div><strong>Niche:</strong> ' + (data.niche || '—') + '</div>' +
           '<div><strong>Summary:</strong> ' + (data.summary || '—') + '</div>' +
+          '<div><strong>Public:</strong> ' + (document.getElementById('public-toggle').checked ? 'Yes' : 'No') + '</div>' +
           '<div><strong>Blocks:</strong> ' + (Array.isArray(data.content) ? data.content.length + ' blocks' : 'invalid') + '</div>';
         document.getElementById('preview').style.display = 'block';
       };
@@ -129,6 +138,9 @@ r.get('/import', async (req, res) => {
         if (!data) return;
         if (!data.title) return showError('title is required');
         if (!Array.isArray(data.content)) return showError('content must be an array');
+        
+        data.is_public = document.getElementById('public-toggle').checked;
+        
         document.getElementById('hidden-payload').value = JSON.stringify(data);
         document.getElementById('hidden-form').submit();
       };
@@ -145,9 +157,10 @@ r.post('/import', async (req, res) => {
 
   const id = generateId(data.title);
   const createdAt = data.created_at || new Date().toISOString().split('T')[0];
+  const isPublic = data.is_public ? 1 : 0;
 
-  await run('INSERT INTO answers (id, title, niche_id, summary, content, created_at, starred, owner_id) VALUES (?,?,?,?,?,?,0,?)',
-    [id, data.title, nicheId, data.summary || '', JSON.stringify(data.content), createdAt, req.user.id]);
+  await run('INSERT INTO answers (id, title, niche_id, summary, content, created_at, starred, owner_id, is_public) VALUES (?,?,?,?,?,?,0,?,?)',
+    [id, data.title, nicheId, data.summary || '', JSON.stringify(data.content), createdAt, req.user.id, isPublic]);
 
   if (!nicheId && data.niche) {
     return res.redirect('/answer/' + id + '/pick-niche?unmatched=' + encodeURIComponent(data.niche));

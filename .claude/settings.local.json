@@ -3,7 +3,11 @@
     "allow": [
       "Bash(npm run *)",
       "Bash(node --check src/routes/answer.js)",
-      "Bash(node --check server.js)"
+      "Bash(node --check server.js)",
+      "WebFetch(domain:treenotes-alpha.vercel.app)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"https://treenotes-alpha.vercel.app/answer/why-windows-is-painful-for-developers-999cbd65\")",
+      "Bash(curl -s -I \"https://treenotes-alpha.vercel.app/answer/why-windows-is-painful-for-developers-999cbd65\")",
+      "Bash(curl *)"
     ]
   }
 }
