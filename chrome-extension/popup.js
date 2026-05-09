@@ -1,4 +1,5 @@
-const PROMPT = `Convert the last generated answer in this conversation into a valid structured JSON. Return only the JSON in a single code block start to end, no explanation, no markdown fences.
+const PROMPTS = {
+  convert: `Convert the last generated answer in this conversation into a valid structured JSON. Return only the JSON in a single code block start to end, no explanation, no markdown fences.
 
 Schema:
 - title: string (infer from the content)
@@ -12,7 +13,45 @@ Schema:
     { "type": "callout", "variant": "tip|info|warning|danger", "value": "..." }
     { "type": "list", "ordered": true|false, "items": ["..."] }
     { "type": "table", "headers": ["..."], "rows": [["..."]] }
-    { "type": "divider" }`;
+    { "type": "divider" }`,
+
+  fresh: `Answer the following question in a valid structured JSON. Return only the JSON in a single code block start to end, no explanation, no markdown fences.
+
+Schema:
+- title: string
+- niche: string (short slug like "machine-learning" or "philosophy")
+- created_at: today's date as YYYY-MM-DD
+- summary: one sentence, max 15 words
+- content: array of blocks. Available block types:
+    { "type": "text", "value": "..." }
+    { "type": "heading", "level": 2, "value": "..." }
+    { "type": "code", "lang": "...", "value": "..." }
+    { "type": "callout", "variant": "tip|info|warning|danger", "value": "..." }
+    { "type": "list", "ordered": true|false, "items": ["..."] }
+    { "type": "table", "headers": ["..."], "rows": [["..."]] }
+    { "type": "divider" }
+
+Question: [YOUR QUESTION HERE]`,
+
+  manual: `Convert the following text into a valid structured JSON. Return only the JSON in a single code block start to end, no explanation, no markdown fences.
+
+Schema:
+- title: string (infer from the content)
+- niche: string (short slug like "machine-learning" or "philosophy")
+- created_at: today's date as YYYY-MM-DD
+- summary: one sentence, max 15 words
+- content: array of blocks. Available block types:
+    { "type": "text", "value": "..." }
+    { "type": "heading", "level": 2, "value": "..." }
+    { "type": "code", "lang": "...", "value": "..." }
+    { "type": "callout", "variant": "tip|info|warning|danger", "value": "..." }
+    { "type": "list", "ordered": true|false, "items": ["..."] }
+    { "type": "table", "headers": ["..."], "rows": [["..."]] }
+    { "type": "divider" }
+
+Text:
+[PASTE TEXT HERE]`
+};
 
 const SUPPORTED = [
   'chatgpt.com',
@@ -27,9 +66,10 @@ function setStatus(msg, type = '') {
   el.className = type;
 }
 
-document.getElementById('inject-btn').addEventListener('click', async () => {
-  const btn = document.getElementById('inject-btn');
-  btn.disabled = true;
+async function handleAction(type) {
+  const prompt = PROMPTS[type];
+  const shouldSubmit = !prompt.includes('['); // Don't submit if there are placeholders
+
   setStatus('Injecting…');
 
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -38,7 +78,6 @@ document.getElementById('inject-btn').addEventListener('click', async () => {
 
   if (!supported) {
     setStatus('Not supported. Open ChatGPT, Gemini, or Claude.', 'err');
-    btn.disabled = false;
     return;
   }
 
@@ -46,42 +85,51 @@ document.getElementById('inject-btn').addEventListener('click', async () => {
     await chrome.scripting.executeScript({
       target: { tabId: tab.id },
       func: injectPrompt,
-      args: [PROMPT, url]
+      args: [prompt, url, shouldSubmit]
     });
-    setStatus('Prompt injected and submitted!', 'ok');
+    setStatus(shouldSubmit ? 'Prompt injected and submitted!' : 'Prompt injected! Fill details and send.', 'ok');
   } catch (e) {
     setStatus('Failed: ' + e.message, 'err');
   }
+}
 
-  btn.disabled = false;
-});
+document.getElementById('btn-convert-last').addEventListener('click', () => handleAction('convert'));
+document.getElementById('btn-fresh').addEventListener('click', () => handleAction('fresh'));
+document.getElementById('btn-manual').addEventListener('click', () => handleAction('manual'));
 
-function injectPrompt(prompt, url) {
-  // ChatGPT
-  if (url.includes('chatgpt.com') || url.includes('chat.openai.com')) {
-    const editor = document.querySelector('#prompt-textarea, [data-id="root"] div[contenteditable="true"], div[contenteditable="true"][data-testid]');
+function injectPrompt(prompt, url, shouldSubmit) {
+  // Common function to simulate typing and optionally click send
+  const typeAndSend = (editorSelector, sendSelector) => {
+    const editor = document.querySelector(editorSelector);
     if (!editor) throw new Error('Input not found');
+    
     editor.focus();
     document.execCommand('insertText', false, prompt);
     editor.dispatchEvent(new InputEvent('input', { bubbles: true }));
-    setTimeout(() => {
-      const send = document.querySelector('[data-testid="send-button"], button[aria-label="Send prompt"]');
-      if (send && !send.disabled) send.click();
-    }, 300);
+
+    if (shouldSubmit) {
+      setTimeout(() => {
+        const send = document.querySelector(sendSelector);
+        if (send && !send.disabled) send.click();
+      }, 300);
+    }
+  };
+
+  // ChatGPT
+  if (url.includes('chatgpt.com') || url.includes('chat.openai.com')) {
+    typeAndSend(
+      '#prompt-textarea, [data-id="root"] div[contenteditable="true"], div[contenteditable="true"][data-testid]',
+      '[data-testid="send-button"], button[aria-label="Send prompt"]'
+    );
     return;
   }
 
   // Claude
   if (url.includes('claude.ai')) {
-    const editor = document.querySelector('div[contenteditable="true"].ProseMirror, div[contenteditable="true"]');
-    if (!editor) throw new Error('Input not found');
-    editor.focus();
-    document.execCommand('insertText', false, prompt);
-    editor.dispatchEvent(new InputEvent('input', { bubbles: true }));
-    setTimeout(() => {
-      const send = document.querySelector('button[aria-label="Send Message"], button[type="submit"]');
-      if (send && !send.disabled) send.click();
-    }, 300);
+    typeAndSend(
+      'div[contenteditable="true"].ProseMirror, div[contenteditable="true"]',
+      'button[aria-label="Send Message"], button[type="submit"]'
+    );
     return;
   }
 
@@ -89,13 +137,17 @@ function injectPrompt(prompt, url) {
   if (url.includes('gemini.google.com')) {
     const editor = document.querySelector('rich-textarea div[contenteditable="true"], div[contenteditable="true"]');
     if (!editor) throw new Error('Input not found');
+    
     editor.focus();
     document.execCommand('insertText', false, prompt);
     editor.dispatchEvent(new InputEvent('input', { bubbles: true }));
-    setTimeout(() => {
-      const send = document.querySelector('button[aria-label="Send message"], button.send-button, mat-icon[data-mat-icon-name="send"]')?.closest('button');
-      if (send && !send.disabled) send.click();
-    }, 300);
+
+    if (shouldSubmit) {
+      setTimeout(() => {
+        const send = document.querySelector('button[aria-label="Send message"], button.send-button, mat-icon[data-mat-icon-name="send"]')?.closest('button');
+        if (send && !send.disabled) send.click();
+      }, 300);
+    }
     return;
   }
 }

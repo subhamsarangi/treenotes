@@ -53,9 +53,17 @@
 </head>
 <body>
   <div class="logo"><img src="icon.png" alt="Lumina"><span>Lumina</span></div>
-  <button id="inject-btn">
-    <span>⟳</span> Convert Last Answer
-  </button>
+  <div style="display:flex;flex-direction:column;gap:0.5rem">
+    <button id="btn-convert-last">
+      <span>⟳</span> Convert Last Answer
+    </button>
+    <button id="btn-fresh">
+      <span>✦</span> Fresh Answer
+    </button>
+    <button id="btn-manual">
+      <span>✎</span> Manual Text
+    </button>
+  </div>
   <div id="status">Open ChatGPT, Gemini, or Claude first.</div>
   <script src="popup.js"></script>
 </body>

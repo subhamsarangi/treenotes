@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Lumina — Convert Last Answer",
+  "name": "Lumina Helper",
   "version": "1.0.0",
-  "description": "Paste the Convert Last Answer prompt into ChatGPT, Gemini, or Claude and submit.",
+  "description": "Inject Lumina prompts into AI chats (ChatGPT, Gemini, Claude).",
   "permissions": ["activeTab", "scripting"],
   "action": {
     "default_popup": "popup.html",
