@@ -109,7 +109,7 @@ document.querySelectorAll('.copy-btn').forEach(btn => {
       setTimeout(() => {
         e.currentTarget.textContent = original;
       }, 1500);
-    } catch (err) {
+    } catch {
       setStatus('Failed to copy', 'err');
     }
   });

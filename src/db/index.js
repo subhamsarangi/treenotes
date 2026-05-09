@@ -31,9 +31,8 @@ export async function getDb() {
       const sql = readFileSync(join(migrationsDir, file), 'utf-8');
       try {
         await client.executeMultiple(sql);
-      } catch (err) {
+      } catch {
         // Migrations might fail if already run (e.g. ALTER TABLE adds existing column)
-        // In a real app we'd track migrations in a table, but for now we just log/ignore
         console.log(`Migration ${file} skipped or already applied.`);
       }
     }

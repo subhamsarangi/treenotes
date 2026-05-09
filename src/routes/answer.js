@@ -49,7 +49,7 @@ r.get('/answer/:id', async (req, res) => {
   `, [a.id, a.id, a.id, a.id, a.id]);
 
   let blocks = [];
-  try { blocks = JSON.parse(a.content); } catch {}
+  try { blocks = JSON.parse(a.content); } catch { /* ignore malformed JSON */ }
 
   const { fuzzy_from, fuzzy_to } = req.query;
   const fuzzyNotice = fuzzy_from && fuzzy_to
@@ -359,7 +359,7 @@ r.post('/answer/:id/edit-content', requireAuth, async (req, res) => {
   try {
     JSON.parse(req.body.content);
     await run('UPDATE answers SET content=? WHERE id=? AND owner_id=?', [req.body.content, req.params.id, req.user.id]);
-  } catch {}
+  } catch { /* ignore invalid JSON */ }
   res.redirect('/answer/' + req.params.id);
 });
 

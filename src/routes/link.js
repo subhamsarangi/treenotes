@@ -17,7 +17,6 @@ r.get('/answer/:id/link', async (req, res) => {
   if (!a) return res.redirect('/dashboard');
 
   const { search = '', sort = 'newest', public: showPublic = '1', private: showPrivate = '1', starred = '0' } = req.query;
-  const niches = await query('SELECT * FROM niches WHERE owner_id = ?', [req.user.id]);
 
   let sql = 'SELECT ans.*, n.name as niche_name FROM answers ans LEFT JOIN niches n ON ans.niche_id = n.id WHERE ans.id != ? AND ans.owner_id = ?';
   const params = [a.id, req.user.id];
