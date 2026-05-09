@@ -47,7 +47,7 @@ r.get('/answer/:id/link', async (req, res) => {
   const answers = await query(sql, params);
 
   const existingLinks = await query(`
-    SELECT CASE WHEN from_id = ? THEN to_id ELSE from_id END as other_id, relation_type, id as link_id
+    SELECT *, CASE WHEN from_id = ? THEN to_id ELSE from_id END as other_id, id as link_id
     FROM answer_links WHERE from_id = ? OR to_id = ?
   `, [a.id, a.id, a.id]);
   const linkedMap = Object.fromEntries(existingLinks.map(l => [l.other_id, l]));
@@ -211,7 +211,13 @@ r.get('/answer/:id/link', async (req, res) => {
                       </div>
                     </div>
                     <div class="flex-gap" style="flex-shrink:0">
-                      <span class="chip" style="color:var(--accent2);border-color:var(--accent2)40">${existing.relation_type.replace('_',' ')}</span>
+                      ${(() => {
+                        let display = existing.relation_type;
+                        if (existing.relation_type === 'parent') {
+                          display = existing.from_id === a.id ? 'parent' : 'child';
+                        }
+                        return `<span class="chip" style="color:var(--accent2);border-color:var(--accent2)40">${display.replace('_',' ')}</span>`;
+                      })()}
                       <form method="POST" action="/answer/${a.id}/unlink/${existing.link_id}">
                         <button class="btn btn-ghost small" style="font-size:0.75rem">Unlink</button>
                       </form>
