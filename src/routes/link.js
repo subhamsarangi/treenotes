@@ -157,6 +157,14 @@ r.get('/answer/:id/link', async (req, res) => {
         </form>
       </div>
 
+      <style>
+        .link-actions-form { display: flex; align-items: center; gap: 0.5rem; }
+        @media (max-width: 640px) {
+          .link-actions-form { flex-direction: column; align-items: stretch; width: 100px; flex-shrink: 0; }
+          .link-actions-form select, .link-actions-form button { width: 100% !important; margin: 0 !important; }
+        }
+      </style>
+
       <div style="display:flex;flex-direction:column;gap:0.8rem">
         ${(() => {
           const unlinked = answers.filter(ans => !linkedMap[ans.id]);
@@ -171,18 +179,16 @@ r.get('/answer/:id/link', async (req, res) => {
                   ${!ans.is_public ? `<span class="chip" style="font-size:0.6rem;background:var(--surface2);color:var(--muted)">🔒 Private</span>` : ''}
                 </div>
               </div>
-              <div class="flex-gap" style="flex-shrink:0">
-                <form method="POST" action="/answer/${a.id}/link">
+              <div style="flex-shrink:0">
+                <form method="POST" action="/answer/${a.id}/link" class="link-actions-form">
                   <input type="hidden" name="to_id" value="${ans.id}">
-                  <div style="display:flex;align-items:center;gap:0.5rem">
-                    <select name="relation_type" style="width:auto;font-size:0.75rem;height:32px;background:var(--surface2)">
-                      <option value="friend">friend</option>
-                      <option value="parent">parent</option>
-                      <option value="prev_sibling">prev sibling</option>
-                      <option value="next_sibling">next sibling</option>
-                    </select>
-                    <button type="submit" class="btn btn-primary small" style="height:32px;padding:0 1rem;font-size:0.8rem">Link</button>
-                  </div>
+                  <select name="relation_type" style="width:auto;font-size:0.75rem;height:32px;background:var(--surface2)">
+                    <option value="friend">friend</option>
+                    <option value="parent">parent</option>
+                    <option value="prev_sibling">prev sibling</option>
+                    <option value="next_sibling">next sibling</option>
+                  </select>
+                  <button type="submit" class="btn btn-primary small" style="height:32px;padding:0 1rem;font-size:0.8rem">Link</button>
                 </form>
               </div>
             </div>
