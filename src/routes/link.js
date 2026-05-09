@@ -4,24 +4,46 @@ import { layout } from '../lib/layout.js';
 
 const r = Router();
 
+const sortMap = {
+  newest: 'created_at DESC',
+  oldest: 'created_at ASC',
+  az: 'title ASC',
+  za: 'title DESC'
+};
+
 r.get('/answer/:id/link', async (req, res) => {
   const rows = await query('SELECT * FROM answers WHERE id = ? AND owner_id = ?', [req.params.id, req.user.id]);
   const a = rows[0];
   if (!a) return res.redirect('/dashboard');
 
-  const { search = '', sort = 'created_at', order = 'desc', niche = '' } = req.query;
+  const { search = '', sort = 'newest', public: showPublic = '1', private: showPrivate = '1', starred = '0' } = req.query;
   const niches = await query('SELECT * FROM niches WHERE owner_id = ?', [req.user.id]);
 
   let sql = 'SELECT ans.*, n.name as niche_name FROM answers ans LEFT JOIN niches n ON ans.niche_id = n.id WHERE ans.id != ? AND ans.owner_id = ?';
   const params = [a.id, req.user.id];
 
-  if (search) { sql += ' AND (ans.title LIKE ? OR ans.summary LIKE ?)'; params.push(`%${search}%`, `%${search}%`); }
-  if (niche) { sql += ' AND ans.niche_id = ?'; params.push(niche); }
+  if (search) {
+    sql += ' AND (ans.title LIKE ? OR ans.summary LIKE ?)';
+    params.push(`%${search}%`, `%${search}%`);
+  }
 
-  const safeSort = ['created_at','title'].includes(sort) ? sort : 'created_at';
-  const safeOrder = order === 'asc' ? 'ASC' : 'DESC';
-  sql += ` ORDER BY ans.${safeSort} ${safeOrder}`;
+  // Visibility filters
+  if (showPublic === '1' && showPrivate !== '1') {
+    sql += ' AND ans.is_public = 1';
+  } else if (showPublic !== '1' && showPrivate === '1') {
+    sql += ' AND ans.is_public = 0';
+  } else if (showPublic !== '1' && showPrivate !== '1') {
+    sql += ' AND 1=0'; // Show nothing
+  }
 
+  if (starred === '1') {
+    sql += ' AND ans.starred = 1';
+  }
+
+  const orderBy = sortMap[sort] || 'created_at DESC';
+  sql += ` ORDER BY ans.${orderBy}`;
+
+  const hasFilters = search || starred === '1' || showPublic !== '1' || showPrivate !== '1' || sort !== 'newest';
   const answers = await query(sql, params);
 
   const existingLinks = await query(`
@@ -32,58 +54,145 @@ r.get('/answer/:id/link', async (req, res) => {
 
   res.send(layout('Link Pages', `
     <div class="container">
-      <a href="/answer/${a.id}" class="muted small mt-4" style="display:block">← Back to "${a.title}"</a>
-      <h1 class="mt-2 mb-1">Link Pages</h1>
-      <p class="muted small mb-3">Select a relation type and link another answer to this one.</p>
+      <div class="mt-1 mb-4">
+        <a href="/answer/${a.id}" class="muted small">← Back to "${a.title}"</a>
+        <h1 class="mt-2">Link Pages</h1>
+        <p class="muted small">Select a relation type and link another answer to this one.</p>
+      </div>
 
-      <form method="GET" class="flex-gap mb-3">
-        <input name="search" placeholder="Search…" value="${search}" style="max-width:240px">
-        <select name="niche" style="width:auto">
-          <option value="">All niches</option>
-          ${niches.map(n => `<option value="${n.id}" ${niche === n.id ? 'selected' : ''}>${n.name}</option>`).join('')}
-        </select>
-        <select name="sort" style="width:auto">
-          <option value="created_at" ${sort === 'created_at' ? 'selected' : ''}>Date</option>
-          <option value="title" ${sort === 'title' ? 'selected' : ''}>Title</option>
-        </select>
-        <select name="order" style="width:auto">
-          <option value="desc" ${order === 'desc' ? 'selected' : ''}>↓</option>
-          <option value="asc" ${order === 'asc' ? 'selected' : ''}>↑</option>
-        </select>
-        <button type="submit" class="btn">Filter</button>
-      </form>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1rem;margin-bottom:3rem;position:relative">
+        <button class="btn btn-ghost filter-toggle-btn" style="width:100%;margin-bottom:0;display:none;justify-content:center;gap:0.5rem" onclick="const f=this.nextElementSibling; f.classList.toggle('open'); this.textContent = f.classList.contains('open') ? '✕ Close Filters' : '🔍 Filter & Sort'">
+          🔍 Filter & Sort
+        </button>
+        <form method="GET" class="responsive-filter-form" style="gap:1rem;align-items:end">
+          <style>
+            .responsive-filter-form { display: none; grid-template-columns: repeat(4, 1fr); margin-top: 1rem; }
+            .responsive-filter-form.open { display: grid; margin-bottom: 1.5rem; }
+            .responsive-filter-form .full-width { grid-column: span 4; }
+            .responsive-filter-form label { font-size: 0.65rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.3rem; display: block; white-space: nowrap; }
+            .responsive-filter-form input, .responsive-filter-form select { font-size: 0.8rem; padding: 0.4rem 0.5rem; height: 32px; background: var(--surface2); }
+            .responsive-filter-form .btn { font-size: 0.8rem; height: 32px; padding: 0 1rem; }
+            .filter-toggle-btn { display: flex !important; font-size: 0.85rem; padding: 0.5rem 1rem; }
 
-      <div style="display:flex;flex-direction:column;gap:0.6rem">
+            .responsive-filter-form .toggle input { width: 42px; height: 24px; border-radius: 12px; }
+            .responsive-filter-form .toggle input::before { width: 20px; height: 20px; top: 1px; left: 1px; }
+            .responsive-filter-form .toggle input:checked::before { left: 19px; }
+            .responsive-filter-form select, .responsive-filter-form select option { font-size: 0.7rem !important; }
+
+            @media (min-width: 640px) { 
+              .responsive-filter-form { grid-template-columns: 1.5fr 0.8fr 0.8fr 0.8fr 1.2fr; } 
+              .responsive-filter-form .full-width { grid-column: span 1; }
+              .responsive-filter-form label { font-size: 0.7rem; }
+              .responsive-filter-form input, .responsive-filter-form select { font-size: 0.82rem; height: 36px; }
+              .responsive-filter-form .toggle input { width: 34px; height: 18px; border-radius: 9px; }
+              .responsive-filter-form .toggle input::before { width: 14px; height: 14px; }
+              .responsive-filter-form .toggle input:checked::before { left: 17px; }
+            }
+            @media (min-width: 960px) { 
+              .filter-toggle-btn { display: none !important; }
+              .responsive-filter-form { display: grid; grid-template-columns: 1.2fr auto auto auto 1fr; margin-top: 0; } 
+            }
+
+            .floating-actions .btn { 
+              height: 32px; 
+              border-radius: 100px; 
+              padding: 0 1.25rem; 
+              font-size: 0.78rem; 
+              font-weight: 500; 
+              display: flex; 
+              align-items: center; 
+              gap: 0.5rem; 
+              transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            .floating-actions .btn:hover:not(.disabled) { transform: translateY(-1px) scale(1.02); }
+            .floating-actions .btn-reset { color: var(--muted); background: transparent; text-decoration: none; }
+            .floating-actions .btn-reset:hover:not(.disabled) { color: var(--logo-light); background: var(--surface2); }
+            .floating-actions .btn.disabled { opacity: 0.3; cursor: not-allowed; pointer-events: none; filter: grayscale(1); }
+          </style>
+          <div class="full-width">
+            <label>Search</label>
+            <input name="search" placeholder="Search answers…" value="${search}">
+          </div>
+          <div>
+            <label>Public</label>
+            <div style="display:flex;align-items:center;height:32px">
+              <label class="toggle">
+                <input type="checkbox" name="public" value="1" ${showPublic === '1' ? 'checked' : ''}>
+              </label>
+            </div>
+          </div>
+          <div>
+            <label>Private</label>
+            <div style="display:flex;align-items:center;height:32px">
+              <label class="toggle">
+                <input type="checkbox" name="private" value="1" ${showPrivate === '1' ? 'checked' : ''}>
+              </label>
+            </div>
+          </div>
+          <div>
+            <label>Starred</label>
+            <div style="display:flex;align-items:center;height:32px">
+              <label class="toggle">
+                <input type="checkbox" name="starred" value="1" ${starred === '1' ? 'checked' : ''}>
+              </label>
+            </div>
+          </div>
+          <div>
+            <label>Sort By</label>
+            <select name="sort" style="width:100%">
+              <option value="newest" ${sort === 'newest' ? 'selected' : ''}>Newest</option>
+              <option value="oldest" ${sort === 'oldest' ? 'selected' : ''}>Oldest</option>
+              <option value="az" ${sort === 'az' ? 'selected' : ''}>A-Z</option>
+              <option value="za" ${sort === 'za' ? 'selected' : ''}>Z-A</option>
+            </select>
+          </div>
+          <div class="floating-actions" style="position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);display:flex;background:var(--surface);padding:4px;border-radius:100px;border:1px solid var(--border);box-shadow:0 8px 30px rgba(0,0,0,0.25);z-index:10;gap:4px">
+            <button type="submit" class="btn btn-primary">
+              <span style="font-size:0.9rem">🔍</span> Filter
+            </button>
+            <a href="/answer/${a.id}/link" class="btn btn-reset ${!hasFilters ? 'disabled' : ''}">
+              <span style="font-size:0.9rem">↺</span> Reset
+            </a>
+          </div>
+        </form>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:0.8rem">
         ${answers.map(ans => {
           const existing = linkedMap[ans.id];
           return `
-            <div class="card" style="display:flex;justify-content:space-between;align-items:center;gap:1rem">
-              <div>
-                <div style="font-family:'Fraunces',serif">${ans.title}</div>
-                ${ans.niche_name ? `<span class="chip small mt-1">${ans.niche_name}</span>` : ''}
+            <div class="card" style="display:flex;justify-content:space-between;align-items:center;gap:1rem;padding:1rem">
+              <div style="flex:1;overflow:hidden">
+                <div style="font-family:'Fraunces',serif;font-size:1.05rem;color:var(--logo-light);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${ans.starred ? '<span class="star">★ </span>' : ''}${ans.title}</div>
+                <div class="flex-gap mt-1" style="align-items:center">
+                  ${ans.niche_name ? `<span class="chip" style="font-size:0.6rem;background:var(--surface2);border-color:var(--border)">${ans.niche_name}</span>` : ''}
+                  ${!ans.is_public ? `<span class="chip" style="font-size:0.6rem;background:var(--surface2);color:var(--muted)">🔒 Private</span>` : ''}
+                </div>
               </div>
               <div class="flex-gap" style="flex-shrink:0">
                 ${existing ? `
                   <span class="chip" style="color:var(--accent2);border-color:var(--accent2)40">${existing.relation_type.replace('_',' ')}</span>
                   <form method="POST" action="/answer/${a.id}/unlink/${existing.link_id}">
-                    <button class="btn btn-ghost small">Unlink</button>
+                    <button class="btn btn-ghost small" style="font-size:0.75rem">Unlink</button>
                   </form>
                 ` : `
                   <form method="POST" action="/answer/${a.id}/link">
                     <input type="hidden" name="to_id" value="${ans.id}">
-                    <select name="relation_type" style="width:auto;font-size:0.8rem">
-                      <option value="friend">friend</option>
-                      <option value="parent">parent</option>
-                      <option value="prev_sibling">prev sibling</option>
-                      <option value="next_sibling">next sibling</option>
-                    </select>
-                    <button type="submit" class="btn btn-primary small" style="margin-left:0.4rem">Link</button>
+                    <div style="display:flex;align-items:center;gap:0.5rem">
+                      <select name="relation_type" style="width:auto;font-size:0.75rem;height:32px;background:var(--surface2)">
+                        <option value="friend">friend</option>
+                        <option value="parent">parent</option>
+                        <option value="prev_sibling">prev sibling</option>
+                        <option value="next_sibling">next sibling</option>
+                      </select>
+                      <button type="submit" class="btn btn-primary small" style="height:32px;padding:0 1rem;font-size:0.8rem">Link</button>
+                    </div>
                   </form>
                 `}
               </div>
             </div>
           `;
-        }).join('') || '<div class="muted card" style="text-align:center;padding:2rem">No answers found.</div>'}
+        }).join('') || '<div class="muted card" style="text-align:center;padding:3rem">No answers found.</div>'}
       </div>
     </div>
   `, req.user));
@@ -95,7 +204,6 @@ r.post('/answer/:id/link', async (req, res) => {
 
   if (!to_id || !relation_type) return res.redirect(`/answer/${from_id}/link`);
 
-  // Verify both answers belong to this user
   const owned = await query('SELECT id FROM answers WHERE id IN (?, ?) AND owner_id = ?', [from_id, to_id, req.user.id]);
   if (owned.length < 2) return res.redirect(`/answer/${from_id}/link`);
 
