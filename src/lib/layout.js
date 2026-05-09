@@ -645,9 +645,15 @@ ${body}
 
   // Show page loader + mark the correct element as loading on internal navigation
   document.addEventListener('click', function(e) {
+    // Ignore clicks with modifier keys (Open in new tab/window)
+    if (e.ctrlKey || e.metaKey || e.shiftKey || e.button === 1) return;
+
     var a = e.target.closest('a');
     if (a && a.href && !a.href.startsWith('#') && !a.href.startsWith('javascript') &&
         a.hostname === location.hostname && !a.classList.contains('no-loader')) {
+      // Also ignore if it has target="_blank"
+      if (a.target === '_blank') return;
+
       loader.classList.add('active');
       // If the link wraps a card, mark the card itself (has absolute-positioned spinner).
       // Otherwise mark the <a> (inline spinner is fine for plain text links).
@@ -702,10 +708,16 @@ ${body}
     if (!loader.classList.contains('active') && !loader.classList.contains('finishing')) return;
     loader.classList.remove('active');
     loader.classList.add('finishing');
-    loader.addEventListener('animationend', function onDone() {
+    
+    var cleanup = function() {
       loader.classList.remove('finishing');
-      loader.removeEventListener('animationend', onDone);
-    });
+      loader.removeEventListener('animationend', cleanup);
+    };
+
+    // animationend might not fire if the tab is in the background
+    loader.addEventListener('animationend', cleanup);
+    setTimeout(cleanup, 400); // Fallback for background tabs (0.35s + 0.05s buffer)
+
     document.querySelectorAll('.btn.loading, a.loading, .card.loading').forEach(function(el) {
       el.classList.remove('loading');
     });
