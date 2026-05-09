@@ -29,3 +29,6 @@ ALTER TABLE answer_links_new RENAME TO answer_links;
 -- 4. Recreate indexes
 CREATE INDEX IF NOT EXISTS idx_answer_links_from ON answer_links(from_id);
 CREATE INDEX IF NOT EXISTS idx_answer_links_to ON answer_links(to_id);
+
+-- 5. Enforce single parent constraint (an answer can only have one parent)
+CREATE UNIQUE INDEX IF NOT EXISTS idx_answer_one_parent ON answer_links(from_id) WHERE relation_type = 'parent';
