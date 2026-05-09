@@ -173,7 +173,7 @@ r.get('/answer/:id/link', async (req, res) => {
           let html = unlinked.map(ans => `
             <div class="card" style="display:flex;justify-content:space-between;align-items:center;gap:1rem;padding:1rem">
               <div style="flex:1;overflow:hidden">
-                <div style="font-family:'Fraunces',serif;font-size:1.05rem;color:var(--logo-light);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${ans.starred ? '<span class="star">★ </span>' : ''}${ans.title}</div>
+                <div style="font-family:'Fraunces',serif;font-size:1.05rem;color:var(--logo-light);word-break:break-word">${ans.starred ? '<span class="star">★ </span>' : ''}${ans.title}</div>
                 <div class="flex-gap mt-1" style="align-items:center">
                   ${ans.niche_name ? `<span class="chip" style="font-size:0.6rem;background:var(--surface2);border-color:var(--border)">${ans.niche_name}</span>` : ''}
                   ${!ans.is_public ? `<span class="chip" style="font-size:0.6rem;background:var(--surface2);color:var(--muted)">🔒 Private</span>` : ''}
@@ -204,7 +204,7 @@ r.get('/answer/:id/link', async (req, res) => {
                 return `
                   <div class="card" style="display:flex;justify-content:space-between;align-items:center;gap:1rem;padding:1rem;opacity:0.8">
                     <div style="flex:1;overflow:hidden">
-                      <div style="font-family:'Fraunces',serif;font-size:1.05rem;color:var(--logo-light);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${ans.starred ? '<span class="star">★ </span>' : ''}${ans.title}</div>
+                      <div style="font-family:'Fraunces',serif;font-size:1.05rem;color:var(--logo-light);word-break:break-word">${ans.starred ? '<span class="star">★ </span>' : ''}${ans.title}</div>
                       <div class="flex-gap mt-1" style="align-items:center">
                         ${ans.niche_name ? `<span class="chip" style="font-size:0.6rem;background:var(--surface2);border-color:var(--border)">${ans.niche_name}</span>` : ''}
                         ${!ans.is_public ? `<span class="chip" style="font-size:0.6rem;background:var(--surface2);color:var(--muted)">🔒 Private</span>` : ''}
