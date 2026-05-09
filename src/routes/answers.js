@@ -72,17 +72,18 @@ r.get('/answers', async (req, res) => {
         </div>
       </div>
 
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1rem;margin-bottom:3rem;margin-top:.5rem; position:relative">
+      <div class="filter-area" style="border-radius:var(--r);padding:1rem;margin-bottom:3rem;position:relative">
         <button class="btn btn-ghost filter-toggle-btn" style="width:100%;margin-bottom:0;display:none;justify-content:center;gap:0.5rem" onclick="const f=this.nextElementSibling; f.classList.toggle('open'); this.textContent = f.classList.contains('open') ? '✕ Close Filters' : '🔍 Filter & Sort'">
           🔍 Filter & Sort
         </button>
         <form method="GET" class="responsive-filter-form" style="gap:1rem;align-items:end">
           <style>
+            .filter-area { background: var(--surface-grey); border: 1px solid var(--border-grey); }
             .responsive-filter-form { display: none; grid-template-columns: repeat(4, 1fr); margin-top: 1rem; }
             .responsive-filter-form.open { display: grid; margin-bottom: 1.5rem; }
             .responsive-filter-form .full-width { grid-column: span 4; }
-            .responsive-filter-form label { font-size: 0.65rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.3rem; display: block; white-space: nowrap; }
-            .responsive-filter-form input, .responsive-filter-form select { font-size: 0.8rem; padding: 0.4rem 0.5rem; height: 32px; background: var(--surface2); }
+            .responsive-filter-form label { font-size: 0.65rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-grey); margin-bottom: 0.3rem; display: block; white-space: nowrap; }
+            .responsive-filter-form input, .responsive-filter-form select { font-size: 0.8rem; padding: 0.4rem 0.5rem; height: 32px; background: var(--surface-grey2); color: var(--text); border: 1px solid var(--border-grey); }
             .responsive-filter-form .btn { font-size: 0.8rem; height: 32px; padding: 0 1rem; }
             .filter-toggle-btn { display: flex !important; font-size: 0.85rem; padding: 0.5rem 1rem; }
 

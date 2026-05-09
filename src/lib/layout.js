@@ -31,6 +31,12 @@ export function layout(title, body, user = null) {
   --muted: #7a7060;
   --danger: #f87171;
   --r: 10px;
+  /* Grey theme for filters */
+  --bg-grey: #121212;
+  --surface-grey: #1c1c1c;
+  --surface-grey2: #252525;
+  --text-grey: #a0a0a0;
+  --border-grey: #333333;
 }
 
 body {
@@ -261,6 +267,8 @@ label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; co
 .mt-4 { margin-top: 2rem; }
 .mb-1 { margin-bottom: 0.5rem; }
 .mb-2 { margin-bottom: 1rem; }
+.mb-3 { margin-bottom: 1.5rem; }
+.mb-4 { margin-bottom: 2rem; }
 .flex { display: flex; }
 .flex-between { display: flex; justify-content: space-between; align-items: center; }
 .flex-gap { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; }
@@ -307,6 +315,20 @@ label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; co
 
 .toggle input:checked::before {
   left: 19px;
+}
+
+/* Filter area */
+.filter-area {
+  background: var(--surface-grey) !important;
+  border: 1px solid var(--border-grey) !important;
+}
+.filter-area label {
+  color: var(--text-grey);
+}
+.filter-area input:not([type="checkbox"]), .filter-area select {
+  background: var(--surface-grey2);
+  border-color: var(--border-grey);
+  color: var(--text);
 }
 
 /* Page loading bar */
