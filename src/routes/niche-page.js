@@ -37,7 +37,7 @@ r.get('/niche/:id', async (req, res) => {
   res.send(layout(niche.name, `
     ${niche.image ? `<img src="${niche.image}" alt="${niche.name}" class="hero-banner">` : ''}
     <div class="container">
-      <div class="mt-4 mb-4">
+      <div class="${niche.image ? 'mt-4' : 'mt-1'} mb-4">
         <a href="/dashboard" class="muted small">← Dashboard</a>
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:2rem;margin-top:1.5rem;flex-wrap:wrap">
           <div style="min-width:280px;flex:1">

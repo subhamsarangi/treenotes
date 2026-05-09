@@ -114,8 +114,8 @@ nav {
   .nav-links a:hover { background: var(--surface); }
 }
 
-.container { max-width: 1000px; margin: 0 auto; padding: 3rem 2rem; position: relative; z-index: 1; }
-.container-wide { max-width: 1300px; margin: 0 auto; padding: 3rem 2rem; position: relative; z-index: 1; }
+.container { max-width: 1000px; margin: 0 auto; padding: 0 1.5rem 1.5rem 1.5rem; position: relative; z-index: 1; }
+.container-wide { max-width: 1300px; margin: 0 auto; padding: 0 1.5rem 1.5rem 1.5rem; position: relative; z-index: 1; }
 
 h1 { font-family: 'Fraunces', serif; font-weight: 300; font-size: 2.4rem; letter-spacing: -0.03em; line-height: 1.2; }
 h2 { font-family: 'Fraunces', serif; font-weight: 300; font-size: 1.6rem; letter-spacing: -0.02em; }

@@ -213,7 +213,7 @@ r.get('/dashboard', async (req, res) => {
   res.send(layout('Home', `
     <div class="container-wide">
       ${starred.length ? `
-        <section class="mt-4">
+        <section class="mt-2">
           <h3 class="mb-2">★ Starred</h3>
           <div class="grid-3" style="align-items:stretch">
             ${starred.map(a => `
@@ -233,7 +233,7 @@ r.get('/dashboard', async (req, res) => {
       ` : ''}
 
       ${unnichedAnswers.length ? `
-        <section class="mt-4">
+        <section class="mt-2">
           <h3 class="mb-2">Unorganized</h3>
           <div class="flex-col" style="gap:0.5rem">
             ${unnichedAnswers.map(a => `
@@ -256,14 +256,41 @@ r.get('/dashboard', async (req, res) => {
           <a href="/niches/new" class="btn">+ New Niche</a>
         </div>
         ${niches.length ? `
-          <div class="niches-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem">
+          <style>
+            .niche-badge {
+              position: absolute;
+              top: -6px;
+              right: -6px;
+              font-size: 0.65rem;
+              padding: 2px 7px;
+              border-radius: 100px;
+              font-weight: 700;
+              z-index: 2;
+              backdrop-filter: blur(4px);
+              transition: transform 0.2s;
+            }
+            @media (min-width: 960px) {
+              .niche-badge {
+                font-size: 0.8rem;
+                padding: 4px 10px;
+                top: -8px;
+                right: -8px;
+              }
+            }
+            .niche-card-link:hover .niche-badge { transform: scale(1.1); }
+          </style>
+          <div class="niches-grid" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(180px, 1fr));gap:1rem">
             ${niches.map(n => `
-              <a href="/niche/${n.id}" style="text-decoration:none;display:flex;--niche-color:${n.color}" class="niche-card-link">
-                <div class="card" style="border-color:${n.color}30;display:flex;flex-direction:column;width:100%;transition:border-color 0.2s,box-shadow 0.2s,transform 0.15s">
-                  <div style="font-size:2rem;margin-bottom:0.6rem;color:${n.color}">${n.icon}</div>
-                  <div style="font-family:'Fraunces',serif;font-size:1.1rem;color:${n.color}">${n.name}</div>
-                  <div class="muted small mt-1">${n.description || ''}</div>
-                  <div class="muted small mt-1" style="margin-top:auto;padding-top:0.5rem">${countMap[n.id] || 0} answers</div>
+              <a href="/niche/${n.id}" style="text-decoration:none;display:flex;--niche-color:${n.color};position:relative" class="niche-card-link">
+                <div class="card" style="border-color:${n.color}25;display:flex;align-items:center;gap:0.8rem;padding:0.8rem;width:100%;transition:all 0.2s;position:relative;overflow:visible">
+                  <div style="font-size:1.5rem;color:${n.color};flex-shrink:0">${n.icon}</div>
+                  <div style="overflow:hidden">
+                    <div style="font-family:'Fraunces',serif;font-size:0.95rem;color:${n.color};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${n.name}</div>
+                    ${n.description ? `<div class="muted" style="font-size:0.65rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${n.description}</div>` : ''}
+                  </div>
+                  <div class="niche-badge" style="background:${n.color}20;color:${n.color};border:1px solid ${n.color}40">
+                    ${countMap[n.id] || 0}
+                  </div>
                 </div>
               </a>
             `).join('')}

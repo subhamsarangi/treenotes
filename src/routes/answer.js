@@ -64,7 +64,7 @@ r.get('/answer/:id', async (req, res) => {
     ${a.image ? `<img src="${a.image}" alt="${a.title}" class="hero-banner">` : ''}
     <div class="container">
       ${fuzzyNotice}
-      <div class="mt-4 mb-1 flex-gap">
+      <div class="${a.image ? 'mt-4' : 'mt-1'} mb-1 flex-gap">
         ${a.niche_id ? `<a href="/niche/${a.niche_id}" class="chip" style="border-color:${a.niche_color}40;color:${a.niche_color}">${a.niche_name}</a>` : ''}
         ${!a.is_public ? `<span class="chip" style="background:var(--surface2);border-color:var(--border);color:var(--muted);font-size:0.7rem">🔒 Private</span>` : ''}
       </div>
