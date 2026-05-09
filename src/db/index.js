@@ -59,10 +59,10 @@ export async function getDb() {
   `);
 
   // Simple migrations for existing databases
-  try { await client.execute('ALTER TABLE niches ADD COLUMN owner_id TEXT'); } catch(e) {}
-  try { await client.execute('ALTER TABLE answers ADD COLUMN owner_id TEXT'); } catch(e) {}
-  try { await client.execute('ALTER TABLE answers ADD COLUMN is_public INTEGER DEFAULT 0'); } catch(e) {}
-  try { await client.execute('ALTER TABLE answer_links ADD COLUMN owner_id TEXT'); } catch(e) {}
+  try { await client.execute('ALTER TABLE niches ADD COLUMN owner_id TEXT'); } catch(_e) {}
+  try { await client.execute('ALTER TABLE answers ADD COLUMN owner_id TEXT'); } catch(_e) {}
+  try { await client.execute('ALTER TABLE answers ADD COLUMN is_public INTEGER DEFAULT 0'); } catch(_e) {}
+  try { await client.execute('ALTER TABLE answer_links ADD COLUMN owner_id TEXT'); } catch(_e) {}
 
   // Seed prompts from files if table is empty
   const existing = await client.execute('SELECT COUNT(*) as cnt FROM prompts');
