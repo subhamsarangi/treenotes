@@ -142,6 +142,9 @@ r.get('/import', async (req, res) => {
         data.is_public = document.getElementById('public-toggle').checked;
         
         document.getElementById('hidden-payload').value = JSON.stringify(data);
+        // Show loading state on the Import button
+        var importBtn = document.querySelector('button[onclick="importAnswer()"]');
+        if (window._btnLoading) window._btnLoading(importBtn);
         document.getElementById('hidden-form').submit();
       };
     </script>

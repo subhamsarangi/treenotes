@@ -322,13 +322,15 @@ label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; co
   box-shadow: 0 0 8px var(--accent);
 }
 
-/* Button loading state */
-.btn.loading {
-  opacity: 0.7;
+/* Button + link loading state */
+.btn.loading,
+a.loading {
+  opacity: 0.65;
   pointer-events: none;
   position: relative;
 }
-.btn.loading::after {
+.btn.loading::after,
+a.loading::after {
   content: '';
   display: inline-block;
   width: 10px;
@@ -338,6 +340,7 @@ label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; co
   border-radius: 50%;
   animation: spin 0.6s linear infinite;
   margin-left: 0.4rem;
+  vertical-align: middle;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -599,45 +602,57 @@ ${body}
 
   const loader = document.getElementById('page-loader');
 
-  // Show loading state on buttons
+  // Show page loader + mark the link element on internal anchor navigation
   document.addEventListener('click', function(e) {
-    const a = e.target.closest('a');
+    var a = e.target.closest('a');
     if (a && a.href && !a.href.startsWith('#') && !a.href.startsWith('javascript') &&
         a.hostname === location.hostname && !a.classList.contains('no-loader')) {
       loader.classList.add('active');
-    }
-
-    const btn = e.target.closest('.btn');
-    if (btn) {
-      const isSubmit = btn.type === 'submit' || (btn.tagName === 'BUTTON' && !btn.type);
-      const isFormButton = btn.closest('form');
-      
-      if (isSubmit && isFormButton) {
-        // Delay slightly to allow form validation to happen
-        setTimeout(() => {
-          if (!isFormButton.checkValidity || isFormButton.checkValidity()) {
-            btn.classList.add('loading');
-            loader.classList.add('active');
-          }
-        }, 10);
-      } else if (btn.classList.contains('btn-primary') || btn.tagName === 'BUTTON') {
-        // Generic buttons that might trigger actions
-        // (Don't auto-load for all .btn to avoid false positives on simple toggles)
-      }
+      a.classList.add('loading');
     }
   });
 
-  // Show loader on form submit
+  // Show loader + button loading on form submit, but only if validation didn't prevent it
   document.addEventListener('submit', function(e) {
-    loader.classList.add('active');
-    const btn = e.target.querySelector('button[type="submit"], button:not([type="button"]), .btn-primary');
-    if (btn) btn.classList.add('loading');
+    // Use setTimeout(0) so all synchronous submit handlers (incl. e.preventDefault()) run first
+    var form = e.target;
+    setTimeout(function() {
+      if (e.defaultPrevented) return; // a handler called e.preventDefault() — skip
+      loader.classList.add('active');
+      // Prefer an explicit submit button; fall back to any non-type-button button
+      var submitBtn = form.querySelector('button[type="submit"]')
+        || form.querySelector('button:not([type="button"])');
+      if (submitBtn) submitBtn.classList.add('loading');
+    }, 0);
   });
 
-  // Hide loader when page fully loads (back/forward)
-  window.addEventListener('pageshow', function() {
+  // Expose helper for JS-triggered submits (e.g. import page)
+  window._btnLoading = function(btn) {
+    if (btn) {
+      btn.classList.add('loading');
+      loader.classList.add('active');
+    }
+  };
+  window._btnDone = function(btn) {
+    if (btn) btn.classList.remove('loading');
     loader.classList.remove('active');
-    document.querySelectorAll('.btn.loading').forEach(b => b.classList.remove('loading'));
+  };
+
+  // Remove loading state whenever the page becomes interactive again
+  // (covers: server-rendered error pages, validation failures, back/forward)
+  function clearLoading() {
+    loader.classList.remove('active');
+    document.querySelectorAll('.btn.loading, a.loading').forEach(function(el) {
+      el.classList.remove('loading');
+    });
+  }
+
+  // pageshow fires on back/forward cache restores too
+  window.addEventListener('pageshow', clearLoading);
+
+  // visibilitychange clears stuck spinners when user returns to the tab
+  document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'visible') clearLoading();
   });
 })();
 </script>
