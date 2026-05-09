@@ -155,15 +155,12 @@ r.get('/niche/:id', async (req, res) => {
         <div style="display:flex;flex-direction:column;gap:0.8rem">
           ${answers.map(a => `
             <a href="/answer/${a.id}" style="text-decoration:none">
-              <div class="card" style="display:flex;justify-content:space-between;align-items:center;padding:1.2rem;cursor:pointer">
-                <div style="flex:1">
-                  <div style="font-family:'Fraunces',serif;font-size:1.1rem;font-weight:400;margin-bottom:0.4rem;color:var(--logo-light)">${a.starred ? '<span class="star">★ </span>' : ''}${a.title}</div>
-                  <div class="flex-gap mb-1">
-                    ${!a.is_public ? `<span class="chip" style="font-size:0.6rem;background:var(--surface2);color:var(--muted);padding:0.1rem 0.4rem">🔒 Private</span>` : ''}
-                  </div>
-                  ${a.summary ? `<div class="muted small">${a.summary}</div>` : ''}
+              <div class="card" style="padding:1.2rem;cursor:pointer">
+                <div style="font-family:'Fraunces',serif;font-size:1.1rem;font-weight:400;margin-bottom:0.4rem;color:var(--logo-light)">${a.starred ? '<span class="star">★ </span>' : ''}${a.title}</div>
+                <div class="flex-gap mb-1" style="align-items:center">
+                  ${!a.is_public ? `<span class="chip" style="font-size:0.6rem;background:var(--surface2);color:var(--muted);padding:0.1rem 0.4rem">🔒 Private</span>` : ''}
+                  <span class="muted" style="font-size:0.65rem">${a.created_at}</span>
                 </div>
-                <div class="muted small" style="white-space:nowrap;margin-left:2rem;text-align:right">${a.created_at}</div>
               </div>
             </a>
           `).join('')}

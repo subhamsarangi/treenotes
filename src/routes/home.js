@@ -225,7 +225,6 @@ r.get('/dashboard', async (req, res) => {
                     <span class="star small">★</span>
                   </div>
                   <div style="font-family:'Fraunces',serif;font-size:1.05rem;margin-bottom:0.3rem;color:var(--logo-light)">${a.title}</div>
-                  <div class="muted small" style="margin-top:auto">${a.summary || ''}</div>
                 </div>
               </a>
             `).join('')}
@@ -239,13 +238,13 @@ r.get('/dashboard', async (req, res) => {
           <div class="flex-col" style="gap:0.5rem">
             ${unnichedAnswers.map(a => `
               <a href="/answer/${a.id}" style="text-decoration:none">
-                <div class="card" style="padding:1rem;display:flex;justify-content:space-between;align-items:center">
-                  <div>
-                    <div style="font-family:'Fraunces',serif;font-size:1rem;color:var(--logo-light)">${a.title}</div>
-                    ${!a.is_public ? `<div class="mt-1"><span class="chip" style="font-size:0.6rem;background:var(--surface2);color:var(--muted);padding:0.1rem 0.4rem">🔒 Private</span></div>` : ''}
-                    <div class="muted small mt-1">${a.summary || ''}</div>
+                <div class="card" style="padding:1rem">
+                  <div style="font-family:'Fraunces',serif;font-size:1rem;color:var(--logo-light)">${a.title}</div>
+                  <div class="flex-gap mt-1" style="align-items:center">
+                    ${!a.is_public ? `<span class="chip" style="font-size:0.6rem;background:var(--surface2);color:var(--muted);padding:0.1rem 0.4rem">🔒 Private</span>` : ''}
                   </div>
-                  <div class="muted small">${a.created_at}</div>
+                </div>
+              </a>
             `).join('')}
           </div>
         </section>
@@ -277,16 +276,12 @@ r.get('/dashboard', async (req, res) => {
         <div style="display:flex;flex-direction:column;gap:0.5rem">
           ${recentAnswers.map(a => `
             <a href="/answer/${a.id}" style="text-decoration:none">
-              <div class="card" style="padding:1rem;display:flex;justify-content:space-between;align-items:center">
-                <div>
-                  <div class="flex-gap" style="margin-bottom:0.3rem">
-                    ${a.niche_name ? `<span class="chip" style="border-color:${a.niche_color}40;color:${a.niche_color};display:inline-flex">${a.niche_name}</span>` : ''}
-                    ${!a.is_public ? `<span class="chip" style="font-size:0.6rem;background:var(--surface2);color:var(--muted)">🔒 Private</span>` : ''}
-                  </div>
-                  <div style="font-family:'Fraunces',serif;font-size:1rem;color:var(--logo-light)">${a.starred ? '<span class="star">★ </span>' : ''}${a.title}</div>
-                  ${a.summary ? `<div class="muted small">${a.summary}</div>` : ''}
+              <div class="card" style="padding:1rem">
+                <div class="flex-gap" style="margin-bottom:0.3rem;align-items:center">
+                  ${a.niche_name ? `<span class="chip" style="border-color:${a.niche_color}40;color:${a.niche_color};display:inline-flex">${a.niche_name}</span>` : ''}
+                  ${!a.is_public ? `<span class="chip" style="font-size:0.6rem;background:var(--surface2);color:var(--muted)">🔒 Private</span>` : ''}
                 </div>
-                <div class="muted small" style="white-space:nowrap;margin-left:1.5rem">${a.created_at}</div>
+                <div style="font-family:'Fraunces',serif;font-size:1rem;color:var(--logo-light)">${a.starred ? '<span class="star">★ </span>' : ''}${a.title}</div>
               </div>
             </a>
           `).join('')}
