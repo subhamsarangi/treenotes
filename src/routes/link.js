@@ -182,7 +182,7 @@ r.get('/answer/:id/link', async (req, res) => {
               <div style="flex-shrink:0">
                 <form method="POST" action="/answer/${a.id}/link" class="link-actions-form">
                   <input type="hidden" name="to_id" value="${ans.id}">
-                  <select name="relation_type" style="width:auto;font-size:0.75rem;height:32px;background:var(--surface2)">
+                  <select name="relation_type" style="width:auto;font-size:0.75rem;height:36px;background:var(--surface2)">
                     <option value="friend">friend</option>
                     <option value="parent">parent</option>
                     <option value="sibling">sibling</option>
