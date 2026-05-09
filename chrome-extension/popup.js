@@ -97,7 +97,7 @@ document.getElementById('btn-convert-last').addEventListener('click', () => hand
 document.getElementById('btn-fresh').addEventListener('click', () => handleAction('fresh'));
 document.getElementById('btn-manual').addEventListener('click', () => handleAction('manual'));
 document.getElementById('btn-import-page').addEventListener('click', () => {
-  chrome.tabs.create({ url: 'http://localhost:3003/import' });
+  chrome.tabs.create({ url: 'https://treenotes-alpha.vercel.app/import' });
 });
 
 document.querySelectorAll('.copy-btn').forEach(btn => {

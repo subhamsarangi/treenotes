@@ -267,8 +267,6 @@ label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; co
 .mt-4 { margin-top: 2rem; }
 .mb-1 { margin-bottom: 0.5rem; }
 .mb-2 { margin-bottom: 1rem; }
-.mb-3 { margin-bottom: 1.5rem; }
-.mb-4 { margin-bottom: 2rem; }
 .flex { display: flex; }
 .flex-between { display: flex; justify-content: space-between; align-items: center; }
 .flex-gap { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; }
