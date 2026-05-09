@@ -158,9 +158,11 @@ r.get('/answer/:id/link', async (req, res) => {
       </div>
 
       <div style="display:flex;flex-direction:column;gap:0.8rem">
-        ${answers.map(ans => {
-          const existing = linkedMap[ans.id];
-          return `
+        ${(() => {
+          const unlinked = answers.filter(ans => !linkedMap[ans.id]);
+          const linked = answers.filter(ans => linkedMap[ans.id]);
+          
+          let html = unlinked.map(ans => `
             <div class="card" style="display:flex;justify-content:space-between;align-items:center;gap:1rem;padding:1rem">
               <div style="flex:1;overflow:hidden">
                 <div style="font-family:'Fraunces',serif;font-size:1.05rem;color:var(--logo-light);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${ans.starred ? '<span class="star">★ </span>' : ''}${ans.title}</div>
@@ -170,29 +172,52 @@ r.get('/answer/:id/link', async (req, res) => {
                 </div>
               </div>
               <div class="flex-gap" style="flex-shrink:0">
-                ${existing ? `
-                  <span class="chip" style="color:var(--accent2);border-color:var(--accent2)40">${existing.relation_type.replace('_',' ')}</span>
-                  <form method="POST" action="/answer/${a.id}/unlink/${existing.link_id}">
-                    <button class="btn btn-ghost small" style="font-size:0.75rem">Unlink</button>
-                  </form>
-                ` : `
-                  <form method="POST" action="/answer/${a.id}/link">
-                    <input type="hidden" name="to_id" value="${ans.id}">
-                    <div style="display:flex;align-items:center;gap:0.5rem">
-                      <select name="relation_type" style="width:auto;font-size:0.75rem;height:32px;background:var(--surface2)">
-                        <option value="friend">friend</option>
-                        <option value="parent">parent</option>
-                        <option value="prev_sibling">prev sibling</option>
-                        <option value="next_sibling">next sibling</option>
-                      </select>
-                      <button type="submit" class="btn btn-primary small" style="height:32px;padding:0 1rem;font-size:0.8rem">Link</button>
-                    </div>
-                  </form>
-                `}
+                <form method="POST" action="/answer/${a.id}/link">
+                  <input type="hidden" name="to_id" value="${ans.id}">
+                  <div style="display:flex;align-items:center;gap:0.5rem">
+                    <select name="relation_type" style="width:auto;font-size:0.75rem;height:32px;background:var(--surface2)">
+                      <option value="friend">friend</option>
+                      <option value="parent">parent</option>
+                      <option value="prev_sibling">prev sibling</option>
+                      <option value="next_sibling">next sibling</option>
+                    </select>
+                    <button type="submit" class="btn btn-primary small" style="height:32px;padding:0 1rem;font-size:0.8rem">Link</button>
+                  </div>
+                </form>
               </div>
             </div>
-          `;
-        }).join('') || '<div class="muted card" style="text-align:center;padding:3rem">No answers found.</div>'}
+          `).join('');
+
+          if (linked.length) {
+            html += `
+              <div class="mt-4 mb-2">
+                <h3 class="small muted" style="text-transform:uppercase;letter-spacing:0.1em">Already Linked</h3>
+              </div>
+              ${linked.map(ans => {
+                const existing = linkedMap[ans.id];
+                return `
+                  <div class="card" style="display:flex;justify-content:space-between;align-items:center;gap:1rem;padding:1rem;opacity:0.8">
+                    <div style="flex:1;overflow:hidden">
+                      <div style="font-family:'Fraunces',serif;font-size:1.05rem;color:var(--logo-light);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${ans.starred ? '<span class="star">★ </span>' : ''}${ans.title}</div>
+                      <div class="flex-gap mt-1" style="align-items:center">
+                        ${ans.niche_name ? `<span class="chip" style="font-size:0.6rem;background:var(--surface2);border-color:var(--border)">${ans.niche_name}</span>` : ''}
+                        ${!ans.is_public ? `<span class="chip" style="font-size:0.6rem;background:var(--surface2);color:var(--muted)">🔒 Private</span>` : ''}
+                      </div>
+                    </div>
+                    <div class="flex-gap" style="flex-shrink:0">
+                      <span class="chip" style="color:var(--accent2);border-color:var(--accent2)40">${existing.relation_type.replace('_',' ')}</span>
+                      <form method="POST" action="/answer/${a.id}/unlink/${existing.link_id}">
+                        <button class="btn btn-ghost small" style="font-size:0.75rem">Unlink</button>
+                      </form>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            `;
+          }
+
+          return html || '<div class="muted card" style="text-align:center;padding:3rem">No answers found.</div>';
+        })()}
       </div>
     </div>
   `, req.user));
