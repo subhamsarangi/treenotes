@@ -421,13 +421,14 @@ html.large-text-pending select { font-size: 1rem; }
 <div style="position:fixed;inset:0;pointer-events:none;z-index:0;background-image:linear-gradient(var(--accent) 1px,transparent 1px),linear-gradient(90deg,var(--accent) 1px,transparent 1px);background-size:40px 40px;opacity:0.08;-webkit-mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black 30%,transparent 100%);mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black 30%,transparent 100%)"></div>
 <div id="page-loader"></div>
 <nav>
-  <a href="/" class="nav-logo" style="display:flex;align-items:center;gap:0.5rem"><img src="/input_nobg.png" alt="Lumina" style="height:28px;width:auto;display:block">Lumina</a>
+  <a href="${user ? '/dashboard' : '/'}" class="nav-logo" style="display:flex;align-items:center;gap:0.5rem"><img src="/input_nobg.png" alt="Lumina" style="height:28px;width:auto;display:block">Lumina</a>
   <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false">
     <span></span>
     <span></span>
   </button>
   <div class="nav-links">
     ${user ? `
+    <a href="/">Home</a>
     <a href="/dashboard">Dashboard</a>
     <a href="/prompts">Prompts</a>
     <a href="/import">Import</a>
