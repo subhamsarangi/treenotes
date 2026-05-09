@@ -407,13 +407,39 @@ html.large-text-pending select { font-size: 1rem; }
   0%   { transform: scaleX(0.05); transform-origin: left; }
   40%  { transform: scaleX(0.6);  transform-origin: left; }
   60%  { transform: scaleX(0.75); transform-origin: left; }
-  100% { transform: scaleX(0.9);  transform-origin: left; }
-}
-@keyframes loading-bar-finish {
-  0%   { transform: scaleX(0.9); transform-origin: left; opacity: 1; }
-  60%  { transform: scaleX(1);   transform-origin: left; opacity: 1; }
   100% { transform: scaleX(1);   transform-origin: left; opacity: 0; }
 }
+
+/* Dialog Overlay */
+.dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15,13,10,0.8);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+.dialog-overlay.open { display: flex; }
+.dialog {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 2rem;
+  max-width: 400px;
+  width: 100%;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+  animation: dialog-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes dialog-pop {
+  from { opacity: 0; transform: scale(0.9) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+.dialog h2 { margin-bottom: 1rem; color: var(--text); }
+.dialog p { color: var(--muted); line-height: 1.6; margin-bottom: 2rem; }
+.dialog-actions { display: flex; justify-content: flex-end; gap: 0.8rem; }
 </style>
 </head>
 <body>
@@ -444,9 +470,17 @@ html.large-text-pending select { font-size: 1rem; }
 </nav>
 ${body}
 
-<div id="lightbox" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(15,13,10,0.88);backdrop-filter:blur(8px);align-items:center;justify-content:center;cursor:zoom-out" onclick="document.getElementById('lightbox').style.display='none'">
-  <img id="lightbox-img" src="" alt="" style="max-width:92vw;max-height:88vh;object-fit:contain;border-radius:var(--r);box-shadow:0 8px 60px rgba(0,0,0,0.6);user-select:none">
-  <button onclick="document.getElementById('lightbox').style.display='none'" style="position:absolute;top:1.2rem;right:1.4rem;background:none;border:none;color:#fff;font-size:1.8rem;cursor:pointer;line-height:1;opacity:0.7" aria-label="Close">✕</button>
+</div>
+
+<div class="dialog-overlay" id="confirm-dialog">
+  <div class="dialog">
+    <h2 id="confirm-title">Are you sure?</h2>
+    <p id="confirm-body">Do you want to proceed with this action?</p>
+    <div class="dialog-actions">
+      <button class="btn btn-ghost" id="confirm-cancel">Cancel</button>
+      <button class="btn btn-primary" id="confirm-ok">Proceed</button>
+    </div>
+  </div>
 </div>
 
 <button id="pwa-install" aria-label="Install app" title="Install Lumina" style="display:none;position:fixed;bottom:1.5rem;right:1.5rem;z-index:300;height:40px;padding:0 1.2rem;border-radius:99px;border:none;background:var(--logo);color:#0c0c0f;font-family:'Outfit',sans-serif;font-size:0.88rem;font-weight:600;letter-spacing:0.03em;cursor:pointer;box-shadow:0 4px 20px rgba(253,178,1,0.35);transition:box-shadow 0.15s,opacity 0.15s;white-space:nowrap;align-items:center;justify-content:center">
@@ -739,6 +773,75 @@ ${body}
   } else {
     window.addEventListener('load', clearLoading);
   }
+
+  // Confirmation Dialog System
+  const confirmOverlay = document.getElementById('confirm-dialog');
+  const confirmTitle = document.getElementById('confirm-title');
+  const confirmBody = document.getElementById('confirm-body');
+  const confirmOk = document.getElementById('confirm-ok');
+  const confirmCancel = document.getElementById('confirm-cancel');
+
+  window.confirmAction = function(options) {
+    return new Promise((resolve) => {
+      confirmTitle.textContent = options.title || 'Are you sure?';
+      confirmBody.textContent = options.body || 'Do you want to proceed?';
+      confirmOk.textContent = options.okText || 'Proceed';
+      confirmOk.className = 'btn ' + (options.okClass || 'btn-primary');
+      confirmOverlay.classList.add('open');
+      
+      const cleanup = (result) => {
+        confirmOverlay.classList.remove('open');
+        confirmOk.removeEventListener('click', onOk);
+        confirmCancel.removeEventListener('click', onCancel);
+        resolve(result);
+      };
+      const onOk = () => cleanup(true);
+      const onCancel = () => cleanup(false);
+      
+      confirmOk.addEventListener('click', onOk, { once: true });
+      confirmCancel.addEventListener('click', onCancel, { once: true });
+    });
+  };
+
+  // Intercept forms/links with data-confirm
+  document.addEventListener('submit', async function(e) {
+    const confirmText = e.target.getAttribute('data-confirm');
+    if (confirmText && !e.target.dataset.confirmed) {
+      e.preventDefault();
+      const ok = await window.confirmAction({
+        title: 'Confirm Action',
+        body: confirmText,
+        okText: 'Yes, proceed'
+      });
+      if (ok) {
+        e.target.dataset.confirmed = 'true';
+        e.target.submit();
+      }
+    }
+  });
+
+  document.addEventListener('click', async function(e) {
+    const btn = e.target.closest('[data-confirm]');
+    if (btn && btn.tagName !== 'FORM') {
+      const confirmText = btn.getAttribute('data-confirm');
+      // If it's inside a form, let the form submit listener handle it
+      if (btn.closest('form')) return;
+      
+      if (!btn.dataset.confirmed) {
+        e.preventDefault();
+        const ok = await window.confirmAction({
+          title: 'Confirm Action',
+          body: confirmText,
+          okText: 'Yes, proceed'
+        });
+        if (ok) {
+          btn.dataset.confirmed = 'true';
+          btn.click();
+        }
+      }
+    }
+  });
+
 })();
 </script>
 </body>

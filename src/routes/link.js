@@ -179,7 +179,7 @@ r.get('/answer/:id/link', async (req, res) => {
                 </div>
               </div>
               <div style="flex-shrink:0">
-                <form method="POST" action="/answer/${a.id}/link" class="link-actions-form">
+                <form method="POST" action="/answer/${a.id}/link" class="link-actions-form" data-confirm="Are you sure you want to link this page?">
                   <input type="hidden" name="to_id" value="${ans.id}">
                   <select name="relation_type" style="width:auto;font-size:0.75rem;height:36px;background:var(--surface2)">
                     <option value="friend">friend</option>
@@ -217,7 +217,7 @@ r.get('/answer/:id/link', async (req, res) => {
                         }
                         return `<span class="chip" style="color:var(--accent2);border-color:var(--accent2)40">${display.replace('_',' ')}</span>`;
                       })()}
-                      <form method="POST" action="/answer/${a.id}/unlink/${existing.link_id}">
+                      <form method="POST" action="/answer/${a.id}/unlink/${existing.link_id}" data-confirm="Are you sure you want to unlink this page?">
                         <button class="btn btn-ghost small" style="font-size:0.75rem">Unlink</button>
                       </form>
                     </div>

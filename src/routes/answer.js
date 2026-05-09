@@ -83,7 +83,7 @@ r.get('/answer/:id', async (req, res) => {
                 <span class="chip">${l.display_type.replace('_',' ')}</span>
                 <a href="/answer/${l.other_id}">${l.other_title}</a>
                 ${req.user && req.user.id === a.owner_id ? `
-                  <form method="POST" action="/answer/${a.id}/unlink/${l.link_id}" style="display:inline">
+                  <form method="POST" action="/answer/${a.id}/unlink/${l.link_id}" style="display:inline" data-confirm="Are you sure you want to remove this link?">
                     <button type="submit" class="btn btn-ghost small" style="padding:0.2rem 0.4rem;font-size:0.7rem">✕</button>
                   </form>
                 ` : ''}
