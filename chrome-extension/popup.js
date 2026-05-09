@@ -97,6 +97,24 @@ document.getElementById('btn-convert-last').addEventListener('click', () => hand
 document.getElementById('btn-fresh').addEventListener('click', () => handleAction('fresh'));
 document.getElementById('btn-manual').addEventListener('click', () => handleAction('manual'));
 
+document.querySelectorAll('.copy-btn').forEach(btn => {
+  btn.addEventListener('click', async (e) => {
+    const type = e.currentTarget.getAttribute('data-type');
+    const prompt = PROMPTS[type];
+    try {
+      await navigator.clipboard.writeText(prompt);
+      const original = e.currentTarget.textContent;
+      e.currentTarget.textContent = '✅';
+      setStatus('Copied to clipboard!', 'ok');
+      setTimeout(() => {
+        e.currentTarget.textContent = original;
+      }, 1500);
+    } catch (err) {
+      setStatus('Failed to copy', 'err');
+    }
+  });
+});
+
 function injectPrompt(prompt, url, shouldSubmit) {
   // Common function to simulate typing and optionally click send
   const typeAndSend = (editorSelector, sendSelector) => {

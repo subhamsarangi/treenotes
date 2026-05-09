@@ -41,6 +41,21 @@
     }
     button:hover { background: #221c12; border-color: #fde68a; }
     button:disabled { opacity: 0.5; cursor: not-allowed; }
+    
+    .prompt-row {
+      display: flex;
+      gap: 0.4rem;
+      width: 100%;
+    }
+    .prompt-row button:first-child { flex: 1; }
+    .copy-btn {
+      width: 42px;
+      justify-content: center;
+      padding: 0;
+      color: #7a7060;
+    }
+    .copy-btn:hover { color: #fdb201; }
+
     #status {
       margin-top: 0.8rem;
       font-size: 0.78rem;
@@ -54,15 +69,24 @@
 <body>
   <div class="logo"><img src="icon.png" alt="Lumina"><span>Lumina</span></div>
   <div style="display:flex;flex-direction:column;gap:0.5rem">
-    <button id="btn-convert-last">
-      <span>⟳</span> Convert Last Answer
-    </button>
-    <button id="btn-fresh">
-      <span>✦</span> Fresh Answer
-    </button>
-    <button id="btn-manual">
-      <span>✎</span> Manual Text
-    </button>
+    <div class="prompt-row">
+      <button id="btn-convert-last">
+        <span>⟳</span> Convert Last
+      </button>
+      <button class="copy-btn" data-type="convert" title="Copy prompt">📋</button>
+    </div>
+    <div class="prompt-row">
+      <button id="btn-fresh">
+        <span>✦</span> Fresh Answer
+      </button>
+      <button class="copy-btn" data-type="fresh" title="Copy prompt">📋</button>
+    </div>
+    <div class="prompt-row">
+      <button id="btn-manual">
+        <span>✎</span> Manual Text
+      </button>
+      <button class="copy-btn" data-type="manual" title="Copy prompt">📋</button>
+    </div>
   </div>
   <div id="status">Open ChatGPT, Gemini, or Claude first.</div>
   <script src="popup.js"></script>
