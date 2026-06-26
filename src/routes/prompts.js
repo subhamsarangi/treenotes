@@ -7,9 +7,9 @@ const r = Router();
 r.get('/prompts', async (req, res) => {
   const prompts = await query('SELECT * FROM prompts ORDER BY id');
 
-  res.send(layout('Prompts', `
+  res.send(layout('Fixed Prompts', `
     <div class="container">
-      <h1 class="mt-4 mb-1">Prompts</h1>
+      <h1 class="mt-4 mb-1">Fixed Prompts</h1>
       <p class="muted small mb-4">Copy prompts to use with AI for structured answers.</p>
 
       <div style="display:grid;grid-template-columns:1fr;gap:1.5rem">

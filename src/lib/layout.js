@@ -593,7 +593,7 @@ html.large-text-pending select { font-size: 1rem; }
     <div class="nav-dropdown">
       <button class="nav-dropdown-trigger" aria-haspopup="true">Tools</button>
       <div class="nav-dropdown-content">
-        <a href="/prompts">Prompts</a>
+        <a href="/prompts">Fixed Prompts</a>
         <a href="/country-xy/">Prompt Sequence</a>
         <a href="/import">Import</a>
       </div>
