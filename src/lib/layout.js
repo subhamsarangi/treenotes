@@ -478,11 +478,13 @@ html.large-text-pending select { font-size: 1rem; }
     <a href="/dashboard">Dashboard</a>
     <a href="/answers">Answers</a>
     <a href="/prompts">Prompts</a>
+    <a href="/country-xy/">Prompt Sequence</a>
     <a href="/import">Import</a>
     <a href="/niches">Niches</a>
     <a href="/graph">Graph</a>
     <a href="/account">Account</a>
     ` : `
+    <a href="/country-xy/">Prompt Sequence</a>
     <a href="/login">Sign in</a>
     <a href="/register" class="btn btn-primary" style="padding:0.4rem 1rem;font-size:0.82rem;font-weight:700">Get started</a>
     `}

@@ -43,6 +43,10 @@ app.use((req, res, next) => {
   next();
 });
 
+app.get('/api/session', (req, res) => {
+  res.json({ loggedIn: !!req.user });
+});
+
 // Public routes
 app.use(authRouter);
 app.use(answerRouter);

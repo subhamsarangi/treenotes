@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Country Learning Prompt Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,600;1,300&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="style.css?v=8" />
+</head>
+<body>
+  <canvas id="grid-canvas" style="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0"></canvas>
+  <div style="position:fixed;inset:0;pointer-events:none;z-index:0;background-image:linear-gradient(var(--accent) 1px,transparent 1px),linear-gradient(90deg,var(--accent) 1px,transparent 1px);background-size:40px 40px;opacity:0.08;-webkit-mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black 30%,transparent 100%);mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black 30%,transparent 100%)"></div>
+
+  <nav>
+    <a href="/dashboard" class="nav-logo"><img src="/input_nobg.png" alt="Lumina" style="height:28px;width:28px;display:block">Lumina</a>
+    <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false">
+      <span></span>
+      <span></span>
+    </button>
+    <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="/dashboard">Dashboard</a>
+      <a href="/answers">Answers</a>
+      <a href="/prompts">Prompts</a>
+      <a href="/country-xy/" class="active">Prompt Sequence</a>
+      <a href="/import">Import</a>
+      <a href="/niches">Niches</a>
+      <a href="/graph">Graph</a>
+      <a href="/account">Account</a>
+    </div>
+  </nav>
+
+  <div class="container py-5 pb-footer">
+    <div class="mb-4">
+      <h1 class="mb-3" style="font-size: clamp(2rem, 5vw, 3rem); font-family: 'Fraunces', serif;">Prompt Sequence Generator</h1>
+      <div class="dropdown mb-2">
+        <div class="d-inline-flex align-items-center dropdown-toggle" id="heading-dropdown-trigger" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;">
+          <h2 id="heading-text" class="mb-1 me-1 h4" style="font-family: 'Outfit', sans-serif !important; font-weight: 500 !important; color: var(--accent) !important;">Select a prompt...</h2>
+        </div>
+        <ul class="dropdown-menu" id="step-file-select-menu" style="min-width: 280px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-radius: 12px; border: 1px solid #dee2e6;">
+          <!-- Dynamically populated options -->
+        </ul>
+      </div>
+      <p id="subheading-text" class="text-muted mb-0">Select a prompt type to generate research steps.</p>
+    </div>
+
+    <!-- Dynamic Alert Container for Validation Errors -->
+    <div id="error-container"></div>
+
+    <!-- Country Form -->
+    <div id="form-section" class="mb-5">
+      <form id="country-form" autocomplete="off">
+        <div class="row g-3 align-items-end" id="dynamic-inputs-row">
+          <!-- Dynamic inputs will be inserted here -->
+          
+          <!-- Buttons Column (always at the end) -->
+          <div class="col-sm-4" id="button-col">
+            <div class="d-flex gap-2">
+              <button type="submit" id="btn-submit" class="btn btn-dark">Submit</button>
+              <button type="button" id="btn-reset" class="btn btn-outline-secondary" disabled>Reset</button>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Prompt Section (hidden initially) -->
+    <div id="prompt-section" class="d-none">
+      <!-- Progress Bar -->
+      <div class="progress mb-4" style="height: 4px; background-color: #e9ecef; border-radius: 2px;">
+        <div id="step-progress-bar" class="progress-bar bg-dark" role="progressbar" style="width: 0%; transition: width 0.3s ease;"></div>
+      </div>
+
+      <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-3">
+        <div>
+          <div id="step-progress-text" class="text-muted small text-uppercase fw-semibold mb-1" style="letter-spacing: 0.05em;">Step 1 of 5</div>
+          <h2 id="step-title" class="h4 mb-0 fw-bold">Brainstorming</h2>
+        </div>
+        <div class="d-flex align-items-center gap-2 mt-1">
+          <span class="text-muted small">Model:</span>
+          <span id="model-val" class="info-badge"></span>
+          <span class="text-muted small ms-2">Thinking:</span>
+          <span id="thinking-val" class="info-badge"></span>
+        </div>
+      </div>
+
+      <div class="prompt-box">
+        <div id="prompt-text" class="prompt-display" contenteditable="true" spellcheck="false"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fixed bottom action bar -->
+  <div id="action-bar" class="action-bar d-none">
+    <div class="container">
+      <div class="action-buttons-container">
+        <button id="btn-copy" class="btn btn-sm btn-outline-dark">Copy prompt</button>
+        <button id="btn-back" class="btn btn-sm btn-outline-secondary invisible">← Back</button>
+        <button id="btn-next" class="btn btn-sm btn-dark" disabled>Next</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast-container" class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999">
+    <div id="copy-toast" class="toast align-items-center text-bg-dark border-0" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body">Copied to clipboard.</div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+  <script src="script.js?v=6"></script>
+  <script>
+    // Session check for navbar
+    fetch('/api/session')
+      .then(res => res.json())
+      .then(data => {
+        if (!data.loggedIn) {
+          const links = document.querySelector('.nav-links');
+          if (links) {
+            links.innerHTML = `
+              <a href="/country-xy/" class="active">Prompt Sequence</a>
+              <a href="/login">Sign in</a>
+              <a href="/register" class="btn btn-primary" style="padding:0.4rem 1rem;font-size:0.82rem;font-weight:700;color:#0c0c0f !important;">Get started</a>
+            `;
+          }
+          const logo = document.querySelector('.nav-logo');
+          if (logo) {
+            logo.setAttribute('href', '/');
+          }
+        }
+      })
+      .catch(err => console.error(err));
+
+    // Mobile nav toggle
+    const toggleBtn = document.querySelector('.nav-toggle');
+    const navLinksList = document.querySelector('.nav-links');
+    if (toggleBtn && navLinksList) {
+      toggleBtn.addEventListener('click', function() {
+        const open = navLinksList.classList.toggle('open');
+        toggleBtn.setAttribute('aria-expanded', open);
+      });
+    }
+
+    // Grid canvas animation from layout.js
+    (function() {
+      const canvas = document.getElementById('grid-canvas');
+      const ctx = canvas.getContext('2d');
+      const CELL = 40;
+      const RADIUS = 220;
+      const LERP = 0.08;
+      let tx = -9999, ty = -9999;
+      let cx = -9999, cy = -9999;
+      let raf;
+
+      function resize() {
+        canvas.width  = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+
+      function draw() {
+        cx += (tx - cx) * LERP;
+        cy += (ty - cy) * LERP;
+
+        const W = canvas.width, H = canvas.height;
+        ctx.clearRect(0, 0, W, H);
+
+        const buf = RADIUS + CELL;
+        const x0 = Math.max(0, Math.floor((cx - buf) / CELL) * CELL);
+        const x1 = Math.min(W, Math.ceil((cx + buf) / CELL) * CELL);
+        const y0 = Math.max(0, Math.floor((cy - buf) / CELL) * CELL);
+        const y1 = Math.min(H, Math.ceil((cy + buf) / CELL) * CELL);
+
+        // Vertical lines
+        for (let x = x0; x <= x1; x += CELL) {
+          if (Math.abs(x - cx) > buf) continue;
+          const grad = ctx.createLinearGradient(x, y0, x, y1);
+          grad.addColorStop(0,   'rgba(253,178,1,0)');
+          grad.addColorStop(0.5, lineAlpha(x, cy, cx, cy));
+          grad.addColorStop(1,   'rgba(253,178,1,0)');
+          ctx.strokeStyle = grad;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(x, y0);
+          ctx.lineTo(x, y1);
+          ctx.stroke();
+        }
+
+        // Horizontal lines
+        for (let y = y0; y <= y1; y += CELL) {
+          if (Math.abs(y - cy) > buf) continue;
+          const grad = ctx.createLinearGradient(x0, y, x1, y);
+          grad.addColorStop(0,   'rgba(253,178,1,0)');
+          grad.addColorStop(0.5, lineAlpha(cx, y, cx, cy));
+          grad.addColorStop(1,   'rgba(253,178,1,0)');
+          ctx.strokeStyle = grad;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(x0, y);
+          ctx.lineTo(x1, y);
+          ctx.stroke();
+        }
+
+        const stillMoving = Math.abs(tx - cx) > 0.5 || Math.abs(ty - cy) > 0.5;
+        raf = stillMoving ? requestAnimationFrame(draw) : null;
+      }
+
+      function lineAlpha(lx, ly, cx, cy) {
+        const d = Math.sqrt((lx - cx) ** 2 + (ly - cy) ** 2);
+        const t = Math.max(0, 1 - d / RADIUS);
+        const a = (t * t * 0.55).toFixed(3);
+        return `rgba(253,178,1,${a})`;
+      }
+
+      function schedule() {
+        if (!raf) raf = requestAnimationFrame(draw);
+      }
+
+      document.addEventListener('mousemove', function(e) {
+        tx = e.clientX; ty = e.clientY;
+        schedule();
+      });
+
+      document.addEventListener('mouseleave', function() {
+        tx = -9999; ty = -9999;
+        schedule();
+      });
+
+      window.addEventListener('resize', function() { resize(); schedule(); });
+      resize();
+      draw();
+    })();
+  </script>
+</body>
+</html>
