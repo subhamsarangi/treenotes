@@ -14,6 +14,7 @@ import promptsRouter from "./src/routes/prompts.js";
 import accountRouter from "./src/routes/account.js";
 import graphRouter from "./src/routes/graph.js";
 import answersRouter from "./src/routes/answers.js";
+import { layout } from "./src/lib/layout.js";
 
 const app = express();
 app.use(express.static('public', { maxAge: '30d' }));
@@ -63,6 +64,18 @@ app.use(requireAuth, promptsRouter);
 app.use(requireAuth, accountRouter);
 app.use(requireAuth, graphRouter);
 app.use(requireAuth, answersRouter);
+
+// Catch-all 404 handler
+app.use((req, res) => {
+  res.status(404).send(layout('Page Not Found', `
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 70vh; text-align: center; padding: 2rem;">
+      <h1 style="font-size: clamp(6rem, 15vw, 10rem); font-family: 'Fraunces', serif; font-weight: 300; line-height: 1; color: var(--accent) !important; margin-bottom: 1rem; text-shadow: 0 0 40px rgba(253,178,1,0.25);">404</h1>
+      <h2 style="font-size: clamp(1.5rem, 4vw, 2.5rem); font-family: 'Outfit', sans-serif; font-weight: 400; color: var(--text); margin-bottom: 1.5rem; letter-spacing: -0.02em;">Page Not Found</h2>
+      <p style="color: var(--muted); font-size: 1.1rem; max-width: 480px; margin-bottom: 2.5rem; line-height: 1.6;">The page you are looking for does not exist, has been moved, or is temporarily unavailable.</p>
+      <a href="/" class="btn btn-dark" style="padding: 0.75rem 2rem; font-weight: 600; border-radius: var(--r); font-family: 'Outfit', sans-serif;">Go Back Home</a>
+    </div>
+  `, req.user));
+});
 
 // Export for Vercel
 export default app;

@@ -594,14 +594,14 @@ html.large-text-pending select { font-size: 1rem; }
       <button class="nav-dropdown-trigger" aria-haspopup="true">Tools</button>
       <div class="nav-dropdown-content">
         <a href="/prompts">Fixed Prompts</a>
-        <a href="/country-xy/">Prompt Sequence</a>
+        <a href="/prompt-sequence/">Prompt Sequence</a>
         <a href="/import">Import</a>
       </div>
     </div>
 
     <a href="/account">Account</a>
     ` : `
-    <a href="/country-xy/">Prompt Sequence</a>
+    <a href="/prompt-sequence/">Prompt Sequence</a>
     <a href="/login">Sign in</a>
     <a href="/register" class="btn btn-primary" style="padding:0.4rem 1rem;font-size:0.82rem;font-weight:700">Get started</a>
     `}

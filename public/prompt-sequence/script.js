@@ -106,7 +106,7 @@ $(function () {
 
   async function fetchStepFiles() {
     try {
-      const response = await fetch('/country-xy/steps/');
+      const response = await fetch('/prompt-sequence/steps/');
       if (!response.ok || response.redirected || (response.url && response.url.indexOf('/login') !== -1)) {
         throw new Error(`Failed to fetch steps directory: redirect or error status`);
       }
@@ -134,7 +134,7 @@ $(function () {
   }
 
   async function loadAndValidateStepFile(fileName) {
-    const response = await fetch(`/country-xy/steps/${fileName}`);
+    const response = await fetch(`/prompt-sequence/steps/${fileName}`);
     if (!response.ok) {
       throw new Error(`Failed to download steps file: ${fileName}`);
     }
